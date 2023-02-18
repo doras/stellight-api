@@ -1,18 +1,28 @@
 plugins {
     id 'java'
-    id 'org.springframework.boot' version '3.0.2'
+    id 'org.springframework.boot' version '2.7.8'
     id 'io.spring.dependency-management' version '1.1.0'
 }
 
 group = 'com.doras.web'
 version = '1.0-SNAPSHOT'
-sourceCompatibility = '17'
+sourceCompatibility = '11'
 
 repositories {
     mavenCentral()
 }
 
 dependencies {
-    implementation 'org.springframework.boot:spring-boot-starter'
-    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    implementation('org.springframework.boot:spring-boot-starter-web')
+    implementation('org.springframework.boot:spring-boot-starter-data-jpa')
+    implementation('com.h2database:h2')
+    testImplementation('org.springframework.boot:spring-boot-starter-test')
+
+    compileOnly('org.projectlombok:lombok')
+    annotationProcessor('org.projectlombok:lombok')
+
+}
+
+test {
+    useJUnitPlatform()
 }
