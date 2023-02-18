@@ -1,4 +1,4 @@
-package com.doras.web.kannakkori.api;
+package com.doras.web.stellight.api;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
