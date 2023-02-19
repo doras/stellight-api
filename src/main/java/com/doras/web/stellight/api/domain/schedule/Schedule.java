@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.Collection;
 
 @Getter
@@ -52,7 +53,11 @@ public class Schedule extends DeletedTimeEntity {
     public Schedule(Stellar stellar, Boolean isFixedTime, LocalDateTime startDateTime, String title, String remark) {
         this.stellar = stellar;
         this.isFixedTime = isFixedTime;
-        this.startDateTime = startDateTime;
+        if (!isFixedTime) {
+            this.startDateTime = startDateTime.truncatedTo(ChronoUnit.DAYS);
+        } else {
+            this.startDateTime = startDateTime;
+        }
         this.title = title;
         this.remark = remark;
     }
