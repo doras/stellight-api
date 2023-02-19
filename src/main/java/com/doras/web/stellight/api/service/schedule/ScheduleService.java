@@ -6,12 +6,11 @@ import com.doras.web.stellight.api.domain.schedule.ScheduleHistoryRepository;
 import com.doras.web.stellight.api.domain.schedule.ScheduleRepository;
 import com.doras.web.stellight.api.domain.stellar.Stellar;
 import com.doras.web.stellight.api.domain.stellar.StellarRepository;
+import com.doras.web.stellight.api.exception.InvalidArgumentException;
 import com.doras.web.stellight.api.web.dto.ScheduleSaveRequestDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import javax.persistence.EntityNotFoundException;
 
 @RequiredArgsConstructor
 @Service
@@ -26,7 +25,8 @@ public class ScheduleService {
 
         // find Stellar entity
         Stellar stellar = stellarRepository.findById(requestDto.getStellarId())
-                .orElseThrow(() -> new EntityNotFoundException("해당 스텔라가 없습니다. id=" + requestDto.getStellarId()));
+                .orElseThrow(() ->
+                        new InvalidArgumentException("존재하지 않는 스텔라 id 입니다. id = " + requestDto.getStellarId()));
 
         // make Schedule entity with Stellar
         Schedule schedule = requestDto.toScheduleEntity();
