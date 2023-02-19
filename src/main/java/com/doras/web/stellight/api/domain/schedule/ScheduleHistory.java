@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 
 @Getter
 @NoArgsConstructor
@@ -37,7 +38,11 @@ public class ScheduleHistory extends CreatedTimeEntity {
     public ScheduleHistory(Schedule schedule, Boolean isFixedTime, LocalDateTime startDateTime, String title, String remark) {
         this.schedule = schedule;
         this.isFixedTime = isFixedTime;
-        this.startDateTime = startDateTime;
+        if (!isFixedTime) {
+            this.startDateTime = startDateTime.truncatedTo(ChronoUnit.DAYS);
+        } else {
+            this.startDateTime = startDateTime;
+        }
         this.title = title;
         this.remark = remark;
     }
