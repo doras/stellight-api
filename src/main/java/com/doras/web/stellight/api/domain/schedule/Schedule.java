@@ -10,6 +10,7 @@ import javax.persistence.*;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.Collection;
+import java.util.HashSet;
 
 @Getter
 @NoArgsConstructor
@@ -46,8 +47,28 @@ public class Schedule extends DeletedTimeEntity {
     @Column(length = 500)
     private String remark;
 
-    @OneToMany(mappedBy = "schedule", fetch = FetchType.LAZY)
-    private Collection<ScheduleHistory> scheduleHistories;
+    @OneToMany(mappedBy = "schedule", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    private Collection<ScheduleHistory> scheduleHistories = new HashSet<>();
+
+    public void update(Boolean isFixedTime, LocalDateTime startDateTime, String title, String remark) {
+        this.isFixedTime = isFixedTime;
+        if (!isFixedTime) {
+            this.startDateTime = startDateTime.truncatedTo(ChronoUnit.DAYS);
+        } else {
+            this.startDateTime = startDateTime;
+        }
+        this.title = title;
+        this.remark = remark;
+
+        // automatically create ScheduleHistory
+        this.scheduleHistories.add(ScheduleHistory.builder()
+                .schedule(this)
+                .isFixedTime(isFixedTime)
+                .startDateTime(startDateTime)
+                .title(title)
+                .remark(remark)
+                .build());
+    }
 
     @Builder
     public Schedule(Stellar stellar, Boolean isFixedTime, LocalDateTime startDateTime, String title, String remark) {
@@ -60,6 +81,15 @@ public class Schedule extends DeletedTimeEntity {
         }
         this.title = title;
         this.remark = remark;
+
+        // automatically create ScheduleHistory
+        this.scheduleHistories.add(ScheduleHistory.builder()
+                .schedule(this)
+                .isFixedTime(isFixedTime)
+                .startDateTime(startDateTime)
+                .title(title)
+                .remark(remark)
+                .build());
     }
 
     public void setStellar(Stellar stellar) {

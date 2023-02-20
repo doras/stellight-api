@@ -1,13 +1,14 @@
 package com.doras.web.stellight.api.service.schedule;
 
 import com.doras.web.stellight.api.domain.schedule.Schedule;
-import com.doras.web.stellight.api.domain.schedule.ScheduleHistory;
-import com.doras.web.stellight.api.domain.schedule.ScheduleHistoryRepository;
 import com.doras.web.stellight.api.domain.schedule.ScheduleRepository;
 import com.doras.web.stellight.api.domain.stellar.Stellar;
 import com.doras.web.stellight.api.domain.stellar.StellarRepository;
 import com.doras.web.stellight.api.exception.InvalidArgumentException;
+import com.doras.web.stellight.api.exception.ScheduleNotFoundException;
+import com.doras.web.stellight.api.web.dto.ScheduleResponseDto;
 import com.doras.web.stellight.api.web.dto.ScheduleSaveRequestDto;
+import com.doras.web.stellight.api.web.dto.ScheduleUpdateRequestDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,7 +19,6 @@ public class ScheduleService {
 
     private final StellarRepository stellarRepository;
     private final ScheduleRepository scheduleRepository;
-    private final ScheduleHistoryRepository scheduleHistoryRepository;
 
     @Transactional
     public Long save(ScheduleSaveRequestDto requestDto) {
@@ -34,12 +34,28 @@ public class ScheduleService {
         // save Schedule
         Schedule savedSchedule = scheduleRepository.save(schedule);
 
-        // make ScheduleHistory entity with Schedule
-        ScheduleHistory scheduleHistory = requestDto.toScheduleHistoryEntity();
-        scheduleHistory.setSchedule(savedSchedule);
-        // save ScheduleHistory
-        scheduleHistoryRepository.save(scheduleHistory);
-
         return savedSchedule.getId();
+    }
+
+    public ScheduleResponseDto findById(Long id) {
+        Schedule entity = scheduleRepository.findById(id)
+                .orElseThrow(() -> new ScheduleNotFoundException(id));
+
+        return new ScheduleResponseDto(entity);
+    }
+
+    @Transactional
+    public Long update(Long id, ScheduleUpdateRequestDto requestDto) {
+        Schedule schedule = scheduleRepository.findById(id)
+                .orElseThrow(() -> new ScheduleNotFoundException(id));
+
+        // update schedule
+        schedule.update(
+                requestDto.getIsFixedTime(),
+                requestDto.getStartDateTime(),
+                requestDto.getTitle(),
+                requestDto.getRemark());
+
+        return id;
     }
 }

@@ -1,7 +1,6 @@
 package com.doras.web.stellight.api.web.dto;
 
 import com.doras.web.stellight.api.domain.schedule.Schedule;
-import com.doras.web.stellight.api.domain.schedule.ScheduleHistory;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -34,14 +33,4 @@ public class ScheduleSaveRequestDto {
                 .remark(remark)
                 .build();
     }
-
-    public ScheduleHistory toScheduleHistoryEntity() {
-        return ScheduleHistory.builder()
-                .isFixedTime(isFixedTime)
-                .startDateTime(startDateTime)
-                .title(title)
-                .remark(remark)
-                .build();
-    }
-
 }
