@@ -28,4 +28,10 @@ public class SchedulesController {
     public Long update(@PathVariable Long id, @RequestBody ScheduleUpdateRequestDto requestDto) {
         return scheduleService.update(id, requestDto);
     }
+
+    @DeleteMapping("/{id}")
+    public Long delete(@PathVariable Long id) {
+        scheduleService.delete(id);
+        return id;
+    }
 }

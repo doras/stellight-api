@@ -37,8 +37,9 @@ public class ScheduleService {
         return savedSchedule.getId();
     }
 
+    @Transactional(readOnly = true)
     public ScheduleResponseDto findById(Long id) {
-        Schedule entity = scheduleRepository.findById(id)
+        Schedule entity = scheduleRepository.findByIdAndIsDeletedFalse(id)
                 .orElseThrow(() -> new ScheduleNotFoundException(id));
 
         return new ScheduleResponseDto(entity);
@@ -46,7 +47,7 @@ public class ScheduleService {
 
     @Transactional
     public Long update(Long id, ScheduleUpdateRequestDto requestDto) {
-        Schedule schedule = scheduleRepository.findById(id)
+        Schedule schedule = scheduleRepository.findByIdAndIsDeletedFalse(id)
                 .orElseThrow(() -> new ScheduleNotFoundException(id));
 
         // update schedule
@@ -57,5 +58,14 @@ public class ScheduleService {
                 requestDto.getRemark());
 
         return id;
+    }
+
+    @Transactional
+    public void delete(Long id) {
+        Schedule schedule = scheduleRepository.findByIdAndIsDeletedFalse(id)
+                .orElseThrow(() -> new ScheduleNotFoundException(id));
+
+        // delete schedule (soft delete)
+        schedule.delete();
     }
 }

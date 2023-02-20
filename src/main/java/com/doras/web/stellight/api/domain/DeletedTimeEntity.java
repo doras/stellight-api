@@ -9,7 +9,7 @@ import javax.persistence.MappedSuperclass;
 public abstract class DeletedTimeEntity extends BaseTimeEntity {
     private Boolean isDeleted = false;
 
-    protected void delete() {
+    public void delete() {
         this.isDeleted = true;
     }
 }

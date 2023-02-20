@@ -9,6 +9,8 @@ import com.doras.web.stellight.api.domain.stellar.Stellar;
 import com.doras.web.stellight.api.domain.stellar.StellarRepository;
 import com.doras.web.stellight.api.web.dto.ScheduleSaveRequestDto;
 import com.doras.web.stellight.api.web.dto.ScheduleUpdateRequestDto;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -17,10 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.test.web.server.LocalServerPort;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -36,9 +35,8 @@ import java.util.Comparator;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.is;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -228,5 +226,103 @@ public class SchedulesControllerTest {
                 assertThat(savedScheduleHistory.getRemark()).isEqualTo(expectedRemark);
             }
         });
+    }
+
+    @Test
+    public void deleteSchedule() throws Exception {
+        //given
+        Stellar stellar = stellarRepository.save(Stellar.builder()
+                .nameKor("한국 이름")
+                .nameEng("english name")
+                .nameJpn("日本語の名前")
+                .build());
+
+        Schedule savedSchedule = scheduleRepository.save(Schedule.builder()
+                .stellar(stellar)
+                .isFixedTime(false)
+                .startDateTime(LocalDateTime.of(2023, 2, 14, 19, 0))
+                .title("스케줄의 이름")
+                .remark("스케줄에 대한 비고")
+                .build());
+
+        Long scheduleId = savedSchedule.getId();
+
+        LocalDateTime now = LocalDateTime.now();
+
+        String url = "http://localhost:" + port + "/api/v1/schedules/" + scheduleId;
+
+        //when, then
+        mvc.perform(delete(url))
+                .andExpect(status().isOk())
+                .andExpect(content().string(String.valueOf(scheduleId)));
+        Schedule deletedSchedule = scheduleRepository.findById(scheduleId).orElseThrow();
+        assertThat(deletedSchedule.getIsDeleted()).isEqualTo(true);
+        assertThat(deletedSchedule.getModifiedDateTime()).isAfter(now);
+    }
+
+    @Test
+    public void notFoundByIdAfterDelete() throws Exception {
+        //given
+        Stellar stellar = stellarRepository.save(Stellar.builder()
+                .nameKor("한국 이름")
+                .nameEng("english name")
+                .nameJpn("日本語の名前")
+                .build());
+
+        Schedule schedule = Schedule.builder()
+                .stellar(stellar)
+                .isFixedTime(true)
+                .startDateTime(LocalDateTime.of(2023, 2, 14, 19, 0))
+                .title("스케줄의 이름")
+                .remark("스케줄에 대한 비고")
+                .build();
+        schedule.delete();
+
+        Schedule savedSchedule = scheduleRepository.save(schedule);
+
+        String url = "http://localhost:" + port + "/api/v1/schedules/" + savedSchedule.getId();
+
+        //when, then
+        mvc.perform(get(url))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    public void notUpdateAfterDelete() throws Exception {
+        //given
+        Stellar stellar = stellarRepository.save(Stellar.builder()
+                .nameKor("한국 이름")
+                .nameEng("english name")
+                .nameJpn("日本語の名前")
+                .build());
+
+        Schedule schedule = Schedule.builder()
+                .stellar(stellar)
+                .isFixedTime(false)
+                .startDateTime(LocalDateTime.of(2023, 2, 14, 19, 0))
+                .title("스케줄의 이름")
+                .remark("스케줄에 대한 비고")
+                .build();
+        schedule.delete();
+        Schedule savedSchedule = scheduleRepository.save(schedule);
+
+        String url = "http://localhost:" + port + "/api/v1/schedules/" + savedSchedule.getId();
+
+        ScheduleUpdateRequestDto requestDto = ScheduleUpdateRequestDto.builder()
+                .isFixedTime(true)
+                .startDateTime(LocalDateTime.of(2023, 2, 18, 21, 0))
+                .title("수정된 스케줄의 이름")
+                .remark("수정된 스케줄에 대한 비고")
+                .build();
+
+        ObjectMapper mapper = new ObjectMapper().registerModule(new JavaTimeModule());
+        String updatedScheduleJson = mapper.writeValueAsString(requestDto);
+
+        //when
+        //then
+        mvc.perform(put(url)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(updatedScheduleJson))
+                .andExpect(status().isNotFound());
     }
 }
