@@ -1,11 +1,14 @@
 package com.doras.web.stellight.api.web;
 
 import com.doras.web.stellight.api.service.schedule.ScheduleService;
+import com.doras.web.stellight.api.web.dto.ScheduleFindAllRequestDto;
 import com.doras.web.stellight.api.web.dto.ScheduleResponseDto;
 import com.doras.web.stellight.api.web.dto.ScheduleSaveRequestDto;
 import com.doras.web.stellight.api.web.dto.ScheduleUpdateRequestDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RequiredArgsConstructor
 @RestController
@@ -33,5 +36,10 @@ public class SchedulesController {
     public Long delete(@PathVariable Long id) {
         scheduleService.delete(id);
         return id;
+    }
+
+    @GetMapping
+    public List<ScheduleResponseDto> findAll(ScheduleFindAllRequestDto requestDto) {
+        return scheduleService.findAllSchedules(requestDto);
     }
 }

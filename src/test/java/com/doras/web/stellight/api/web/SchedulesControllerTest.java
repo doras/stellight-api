@@ -324,4 +324,128 @@ public class SchedulesControllerTest {
                         .content(updatedScheduleJson))
                 .andExpect(status().isNotFound());
     }
+
+    @Test
+    public void getNoSchedules() throws Exception {
+        //given
+        String url = "http://localhost:" + port + "/api/v1/schedules";
+
+        //when, then
+        mvc.perform(get(url))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(0));
+    }
+
+    @Test
+    public void getAllSchedules() throws Exception {
+        //given
+        Stellar stellar = stellarRepository.save(Stellar.builder()
+                .nameKor("한국 이름")
+                .nameEng("english name")
+                .nameJpn("日本語の名前")
+                .build());
+
+        Schedule savedSchedule = scheduleRepository.save(Schedule.builder()
+                .stellar(stellar)
+                .isFixedTime(true)
+                .startDateTime(LocalDateTime.of(2023, 2, 14, 19, 0, 0))
+                .title("스케줄의 이름")
+                .remark("스케줄에 대한 비고")
+                .build());
+        Schedule savedSchedule2 = scheduleRepository.save(Schedule.builder()
+                .stellar(stellar)
+                .isFixedTime(false)
+                .startDateTime(LocalDateTime.of(2023, 2, 16, 0, 0, 0))
+                .title("스케줄의 이름2")
+                .remark("스케줄에 대한 비고2")
+                .build());
+
+        String url = "http://localhost:" + port + "/api/v1/schedules";
+
+        //when, then
+        mvc.perform(get(url))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(2))
+                .andExpect(jsonPath("$[0].id", is(savedSchedule.getId()), Long.class))
+                .andExpect(jsonPath("$[0].stellarNameKor", is(savedSchedule.getStellar().getNameKor())))
+                .andExpect(jsonPath("$[0].isFixedTime", is(savedSchedule.getIsFixedTime())))
+                .andExpect(jsonPath("$[0].startDateTime", is(
+                        savedSchedule.getStartDateTime()
+                                .format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss")))))
+                .andExpect(jsonPath("$[0].title", is(savedSchedule.getTitle())))
+                .andExpect(jsonPath("$[0].remark", is(savedSchedule.getRemark())))
+                .andExpect(jsonPath("$[1].id", is(savedSchedule2.getId()), Long.class))
+                .andExpect(jsonPath("$[1].stellarNameKor", is(savedSchedule2.getStellar().getNameKor())))
+                .andExpect(jsonPath("$[1].isFixedTime", is(savedSchedule2.getIsFixedTime())))
+                .andExpect(jsonPath("$[1].startDateTime", is(
+                        savedSchedule2.getStartDateTime()
+                                .format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss")))))
+                .andExpect(jsonPath("$[1].title", is(savedSchedule2.getTitle())))
+                .andExpect(jsonPath("$[1].remark", is(savedSchedule2.getRemark())));
+    }
+
+    @Test
+    public void getAllSchedulesWithFilters() throws Exception {
+        //given
+        Stellar stellar = stellarRepository.save(Stellar.builder()
+                .nameKor("한국 이름")
+                .nameEng("english name")
+                .nameJpn("日本語の名前")
+                .build());
+
+        Stellar stellar2 = stellarRepository.save(Stellar.builder()
+                .nameKor("한국 이름2")
+                .nameEng("english name2")
+                .nameJpn("日本語の名前2")
+                .build());
+
+        Schedule savedSchedule = scheduleRepository.save(Schedule.builder()
+                .stellar(stellar)
+                .isFixedTime(true)
+                .startDateTime(LocalDateTime.of(2023, 2, 14, 19, 0, 0))
+                .title("스케줄의 이름")
+                .remark("스케줄에 대한 비고")
+                .build());
+        Schedule savedSchedule2 = scheduleRepository.save(Schedule.builder()
+                .stellar(stellar2)
+                .isFixedTime(false)
+                .startDateTime(LocalDateTime.of(2023, 2, 16, 0, 0, 0))
+                .title("스케줄의 이름2")
+                .remark("스케줄에 대한 비고2")
+                .build());
+
+        String url = "http://localhost:" + port + "/api/v1/schedules";
+
+        //when, then
+
+        // stellarId
+        mvc.perform(get(url)
+                        .param("stellarId", String.valueOf(stellar.getId())))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(1))
+                .andExpect(jsonPath("$[0].id", is(savedSchedule.getId()), Long.class));
+
+        // date after
+        mvc.perform(get(url)
+                        .param("startDateTimeAfter", "2023-02-15T00:00:00"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(1))
+                .andExpect(jsonPath("$[0].id", is(savedSchedule2.getId()), Long.class));
+
+        // date before
+        mvc.perform(get(url)
+                        .param("startDateTimeBefore", "2023-02-15T00:00:00"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(1))
+                .andExpect(jsonPath("$[0].id", is(savedSchedule.getId()), Long.class));
+
+        // all filters
+        mvc.perform(get(url)
+                        .param("stellarId", String.valueOf(stellar.getId()))
+                        .param("startDateTimeAfter", "2023-02-14T00:00:00")
+                        .param("startDateTimeBefore", "2023-02-15T00:00:00"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(1))
+                .andExpect(jsonPath("$[0].id", is(savedSchedule.getId()), Long.class));
+    }
 }
