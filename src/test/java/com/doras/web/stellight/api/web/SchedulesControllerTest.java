@@ -1,6 +1,5 @@
 package com.doras.web.stellight.api.web;
 
-import com.doras.web.stellight.api.domain.CreatedTimeEntity;
 import com.doras.web.stellight.api.domain.schedule.Schedule;
 import com.doras.web.stellight.api.domain.schedule.ScheduleHistory;
 import com.doras.web.stellight.api.domain.schedule.ScheduleHistoryRepository;
@@ -218,7 +217,7 @@ public class SchedulesControllerTest {
                 Collection<ScheduleHistory> scheduleHistories = modifiedSchedule.getScheduleHistories();
                 assertThat(scheduleHistories.size()).isEqualTo(2);
                 ScheduleHistory savedScheduleHistory = scheduleHistories.stream()
-                        .max(Comparator.comparing(CreatedTimeEntity::getCreatedDateTime)).orElseThrow();
+                        .max(Comparator.comparing(ScheduleHistory::getId)).orElseThrow();
                 assertThat(savedScheduleHistory.getSchedule().getId()).isEqualTo(savedSchedule.getId());
                 assertThat(savedScheduleHistory.getIsFixedTime()).isEqualTo(expectedIsFixedTime);
                 assertThat(savedScheduleHistory.getStartDateTime()).isEqualTo(expectedStartDateTime);

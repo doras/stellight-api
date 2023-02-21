@@ -75,7 +75,7 @@ public class ScheduleHistoryRepositoryTest {
         //then
         assertThat(scheduleHistoryList.size()).isEqualTo(2);
         ScheduleHistory scheduleHistory = scheduleHistoryList.stream()
-                .max(Comparator.comparing(ScheduleHistory::getCreatedDateTime)).orElseThrow();
+                .max(Comparator.comparing(ScheduleHistory::getId)).orElseThrow();
         assertThat(scheduleHistory.getSchedule().getId()).isEqualTo(schedule.getId());
         assertThat(scheduleHistory.getIsFixedTime()).isEqualTo(isFixedTime);
         assertThat(scheduleHistory.getStartDateTime()).isEqualTo(startDateTime);

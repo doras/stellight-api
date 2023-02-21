@@ -140,7 +140,7 @@ public class ScheduleTest {
         Collection<ScheduleHistory> histories = entity.getScheduleHistories();
         assertThat(histories.size()).isEqualTo(2);
         ScheduleHistory scheduleHistory = histories.stream()
-                .max(Comparator.comparing(ScheduleHistory::getCreatedDateTime)).orElseThrow();
+                .max(Comparator.comparing(ScheduleHistory::getId)).orElseThrow();
         assertThat(scheduleHistory.getSchedule().getId()).isEqualTo(entity.getId());
         assertThat(scheduleHistory.getIsFixedTime()).isEqualTo(isFixedTime);
         assertThat(scheduleHistory.getStartDateTime()).isEqualTo(startDateTime);
@@ -174,7 +174,7 @@ public class ScheduleTest {
         histories = entity.getScheduleHistories();
         assertThat(histories.size()).isEqualTo(2);
         scheduleHistory = histories.stream()
-                .max(Comparator.comparing(ScheduleHistory::getCreatedDateTime)).orElseThrow();
+                .max(Comparator.comparing(ScheduleHistory::getId)).orElseThrow();
         assertThat(scheduleHistory.getSchedule().getId()).isEqualTo(entity.getId());
         assertThat(scheduleHistory.getIsFixedTime()).isEqualTo(false);
         assertThat(scheduleHistory.getStartDateTime()).isEqualTo(expectedStartDateTime);
