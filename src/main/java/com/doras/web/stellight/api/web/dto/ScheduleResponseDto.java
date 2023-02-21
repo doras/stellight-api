@@ -5,6 +5,9 @@ import lombok.Getter;
 
 import java.time.LocalDateTime;
 
+/**
+ * DTO with {@link Schedule} information used in response.
+ */
 @Getter
 public class ScheduleResponseDto {
     private final Long id;

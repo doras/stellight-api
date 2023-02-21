@@ -15,6 +15,9 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+/**
+ * Test class for {@link ScheduleHistoryRepository}.
+ */
 @ExtendWith(SpringExtension.class)
 @SpringBootTest
 public class ScheduleHistoryRepositoryTest {
@@ -28,6 +31,9 @@ public class ScheduleHistoryRepositoryTest {
     @Autowired
     ScheduleHistoryRepository scheduleHistoryRepository;
 
+    /**
+     * Clean up all repositories after each test.
+     */
     @AfterEach
     public void cleanup() {
         scheduleHistoryRepository.deleteAll();
@@ -35,6 +41,9 @@ public class ScheduleHistoryRepositoryTest {
         stellarRepository.deleteAll();
     }
 
+    /**
+     * Test for saving schedule history.
+     */
     @Test
     public void saveScheduleHistory() {
         //given

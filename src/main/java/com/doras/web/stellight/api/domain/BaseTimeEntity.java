@@ -8,6 +8,10 @@ import javax.persistence.EntityListeners;
 import javax.persistence.MappedSuperclass;
 import java.time.LocalDateTime;
 
+/**
+ * Base time super entity class.
+ * Have {@code createdDateTime} and {@link #modifiedDateTime}.
+ */
 @Getter
 @MappedSuperclass
 @EntityListeners(AuditingEntityListener.class)

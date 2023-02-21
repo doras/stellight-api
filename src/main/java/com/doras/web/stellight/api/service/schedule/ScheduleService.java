@@ -21,6 +21,9 @@ import javax.persistence.PersistenceContext;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * Service about {@link Schedule}.
+ */
 @RequiredArgsConstructor
 @Service
 public class ScheduleService {
@@ -31,10 +34,17 @@ public class ScheduleService {
     @PersistenceContext
     private EntityManager entityManager;
 
+    /**
+     * Save a new schedule with given data in {@code requestDto}.
+     * @param requestDto Request DTO with data to save.
+     * @return ID of saved entity.
+     */
     @Transactional
     public Long save(ScheduleSaveRequestDto requestDto) {
 
-        // find Stellar entity
+        // find Stellar entity with given stellar id
+        // When not found, throw InvalidArgumentException not StellarNotFoundException
+        // because this is not a method for finding stellar.
         Stellar stellar = stellarRepository.findById(requestDto.getStellarId())
                 .orElseThrow(() ->
                         new InvalidArgumentException("존재하지 않는 스텔라 id 입니다. id = " + requestDto.getStellarId()));
@@ -48,6 +58,11 @@ public class ScheduleService {
         return savedSchedule.getId();
     }
 
+    /**
+     * Find Schedule by id that is not (soft) deleted.
+     * @param id ID for schedule to be found.
+     * @return Information of found entity in {@link ScheduleResponseDto}.
+     */
     @Transactional(readOnly = true)
     public ScheduleResponseDto findById(Long id) {
         Schedule entity = scheduleRepository.findByIdAndIsDeletedFalse(id)
@@ -56,6 +71,12 @@ public class ScheduleService {
         return new ScheduleResponseDto(entity);
     }
 
+    /**
+     * Update the schedule entity with given {@code id} to data in {@code requestDto}.
+     * @param id ID for schedule to be updated
+     * @param requestDto DTO that has data to update
+     * @return ID of updated entity
+     */
     @Transactional
     public Long update(Long id, ScheduleUpdateRequestDto requestDto) {
         Schedule schedule = scheduleRepository.findByIdAndIsDeletedFalse(id)
@@ -71,6 +92,10 @@ public class ScheduleService {
         return id;
     }
 
+    /**
+     * Delete (soft deleting) the schedule entity with given {@code id}.
+     * @param id ID for schedule to be deleted
+     */
     @Transactional
     public void delete(Long id) {
         Schedule schedule = scheduleRepository.findByIdAndIsDeletedFalse(id)
@@ -80,6 +105,11 @@ public class ScheduleService {
         schedule.delete();
     }
 
+    /**
+     * Find all schedules with given filters in {@code requestDto}.
+     * @param requestDto DTO that has filters
+     * @return List of found entities with {@link ScheduleResponseDto} classes.
+     */
     @Transactional(readOnly = true)
     public List<ScheduleResponseDto> findAllSchedules(ScheduleFindAllRequestDto requestDto) {
         QSchedule schedule = QSchedule.schedule;

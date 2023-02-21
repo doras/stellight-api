@@ -7,6 +7,9 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
+/**
+ * DTO used in request to save {@link Schedule}.
+ */
 @Getter
 @NoArgsConstructor
 public class ScheduleSaveRequestDto {
@@ -25,6 +28,10 @@ public class ScheduleSaveRequestDto {
         this.remark = remark;
     }
 
+    /**
+     * Create new {@link Schedule} object with values in this object.
+     * @return created {@link Schedule} object.
+     */
     public Schedule toScheduleEntity() {
         return Schedule.builder()
                 .isFixedTime(isFixedTime)

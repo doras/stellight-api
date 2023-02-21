@@ -18,6 +18,9 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+/**
+ * Test class for {@link ScheduleRepository}.
+ */
 @ExtendWith(SpringExtension.class)
 @SpringBootTest
 public class ScheduleRepositoryTest {
@@ -31,12 +34,18 @@ public class ScheduleRepositoryTest {
     @Autowired
     ScheduleRepository scheduleRepository;
 
+    /**
+     * Clean up all repositories after each test.
+     */
     @AfterEach
     public void cleanup() {
         scheduleRepository.deleteAll();
         stellarRepository.deleteAll();
     }
 
+    /**
+     * Test for saving schedule.
+     */
     @Test
     public void saveSchedule() {
         //given
@@ -63,6 +72,7 @@ public class ScheduleRepositoryTest {
                 .remark(remark)
                 .build());
 
+        // Because of lazy fetch about ScheduleHistory, must use additional transaction code.
         transactionTemplate.execute(new TransactionCallbackWithoutResult() {
             @Override
             protected void doInTransactionWithoutResult(TransactionStatus status) {
@@ -89,6 +99,9 @@ public class ScheduleRepositoryTest {
         });
     }
 
+    /**
+     * Test for saving BaseTimeEntity information in Schedule.
+     */
     @Test
     public void saveBaseTimeEntity() {
         //given

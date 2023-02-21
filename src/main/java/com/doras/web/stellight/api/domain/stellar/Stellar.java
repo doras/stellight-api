@@ -8,6 +8,9 @@ import lombok.NoArgsConstructor;
 import javax.persistence.*;
 import java.util.Collection;
 
+/**
+ * Stellar entity which is VTuber from StelLive.
+ */
 @Getter
 @NoArgsConstructor
 @Entity
@@ -36,9 +39,18 @@ public class Stellar {
      */
     private String nameJpn;
 
+    /**
+     * Relationship to {@link Schedule}, the schedules of this Stellar.
+     */
     @OneToMany(mappedBy = "stellar", fetch = FetchType.LAZY)
     private Collection<Schedule> schedules;
 
+    /**
+     * Constructor of Schedule.
+     * @param nameKor Values for {@link #nameKor}.
+     * @param nameEng Values for {@link #nameEng}.
+     * @param nameJpn Values for {@link #nameJpn}.
+     */
     @Builder
     public Stellar(String nameKor, String nameEng, String nameJpn) {
         this.nameKor = nameKor;

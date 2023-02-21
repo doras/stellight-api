@@ -11,18 +11,27 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+/**
+ * Test class for {@link StellarRepository}.
+ */
 @ExtendWith(SpringExtension.class)
 @SpringBootTest
 public class StellarRepositoryTest {
 
     @Autowired
-    StellarRepository stellarRepository;
+    private StellarRepository stellarRepository;
 
+    /**
+     * Clean up all repositories after each test.
+     */
     @AfterEach
     public void cleanup() {
         stellarRepository.deleteAll();
     }
 
+    /**
+     * Test for loading saved stellars.
+     */
     @Test
     public void loadStellarsSave() {
         //given

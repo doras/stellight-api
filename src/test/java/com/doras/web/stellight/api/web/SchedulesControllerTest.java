@@ -37,6 +37,9 @@ import static org.hamcrest.Matchers.is;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+/**
+ * Test class for {@link SchedulesController}.
+ */
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class SchedulesControllerTest {
@@ -64,6 +67,9 @@ public class SchedulesControllerTest {
     @Autowired
     private ScheduleHistoryRepository scheduleHistoryRepository;
 
+    /**
+     * Set up mvc before each test.
+     */
     @BeforeEach
     public void setup() {
         mvc = MockMvcBuilders
@@ -71,13 +77,19 @@ public class SchedulesControllerTest {
                 .build();
     }
 
+    /**
+     * Clean up entityManager after each test.
+     */
     @AfterEach
-    public void tearDown() {
+    public void cleanup() {
         scheduleHistoryRepository.deleteAll();
         scheduleRepository.deleteAll();
         stellarRepository.deleteAll();
     }
 
+    /**
+     * Test for saving schedule.
+     */
     @Test
     public void saveSchedule() {
 
@@ -88,6 +100,7 @@ public class SchedulesControllerTest {
                 .nameJpn("日本語の名前")
                 .build());
 
+        // Because of lazy fetch about ScheduleHistory, must use additional transaction code.
         transactionTemplate.execute(new TransactionCallbackWithoutResult() {
             @Override
             protected void doInTransactionWithoutResult(TransactionStatus status) {
@@ -113,9 +126,12 @@ public class SchedulesControllerTest {
                 ResponseEntity<Long> responseEntity = restTemplate.postForEntity(url, requestDto, Long.class);
 
                 //then
+
+                // response check
                 assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.OK);
                 assertThat(responseEntity.getBody()).isGreaterThan(0L);
 
+                // schedule check
                 Schedule savedSchedule = scheduleRepository.findAll().get(0);
                 assertThat(savedSchedule.getStellar().getId()).isEqualTo(stellarId);
                 assertThat(savedSchedule.getIsFixedTime()).isEqualTo(isFixedTime);
@@ -123,6 +139,7 @@ public class SchedulesControllerTest {
                 assertThat(savedSchedule.getTitle()).isEqualTo(title);
                 assertThat(savedSchedule.getRemark()).isEqualTo(remark);
 
+                // schedule history check
                 ScheduleHistory savedScheduleHistory = savedSchedule.getScheduleHistories().iterator().next();
                 assertThat(savedScheduleHistory.getSchedule().getId()).isEqualTo(savedSchedule.getId());
                 assertThat(savedScheduleHistory.getIsFixedTime()).isEqualTo(isFixedTime);
@@ -133,6 +150,10 @@ public class SchedulesControllerTest {
         });
     }
 
+    /**
+     * Test for getting schedule
+     * @throws Exception throws Exception from MockMvc
+     */
     @Test
     public void getSchedule() throws Exception {
         //given
@@ -164,6 +185,9 @@ public class SchedulesControllerTest {
 
     }
 
+    /**
+     * Test for updating schedule
+     */
     @Test
     public void updateSchedule() {
         //given
@@ -201,19 +225,23 @@ public class SchedulesControllerTest {
         ResponseEntity<Long> responseEntity = restTemplate.exchange(url, HttpMethod.PUT, requestEntity, Long.class);
 
         //then
+        // Because of lazy fetch about ScheduleHistory, must use additional transaction code.
         transactionTemplate.execute(new TransactionCallbackWithoutResult() {
             @Override
             protected void doInTransactionWithoutResult(TransactionStatus status) {
 
+                // response check
                 assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.OK);
                 assertThat(responseEntity.getBody()).isGreaterThan(0L);
 
+                // schedule check
                 Schedule modifiedSchedule = scheduleRepository.findAll().get(0);
                 assertThat(modifiedSchedule.getIsFixedTime()).isEqualTo(expectedIsFixedTime);
                 assertThat(modifiedSchedule.getStartDateTime()).isEqualTo(expectedStartDateTime);
                 assertThat(modifiedSchedule.getTitle()).isEqualTo(expectedTitle);
                 assertThat(modifiedSchedule.getRemark()).isEqualTo(expectedRemark);
 
+                // histories check
                 Collection<ScheduleHistory> scheduleHistories = modifiedSchedule.getScheduleHistories();
                 assertThat(scheduleHistories.size()).isEqualTo(2);
                 ScheduleHistory savedScheduleHistory = scheduleHistories.stream()
@@ -227,6 +255,10 @@ public class SchedulesControllerTest {
         });
     }
 
+    /**
+     * Test for deleting schedule
+     * @throws Exception throws Exception from MockMvc
+     */
     @Test
     public void deleteSchedule() throws Exception {
         //given
@@ -259,6 +291,10 @@ public class SchedulesControllerTest {
         assertThat(deletedSchedule.getModifiedDateTime()).isAfter(now);
     }
 
+    /**
+     * Test for finding no element by id after deletion
+     * @throws Exception throws Exception from MockMvc
+     */
     @Test
     public void notFoundByIdAfterDelete() throws Exception {
         //given
@@ -286,6 +322,10 @@ public class SchedulesControllerTest {
                 .andExpect(status().isNotFound());
     }
 
+    /**
+     * Test for failure about updating after deletion
+     * @throws Exception throws Exception from MockMvc
+     */
     @Test
     public void notUpdateAfterDelete() throws Exception {
         //given
@@ -317,14 +357,17 @@ public class SchedulesControllerTest {
         ObjectMapper mapper = new ObjectMapper().registerModule(new JavaTimeModule());
         String updatedScheduleJson = mapper.writeValueAsString(requestDto);
 
-        //when
-        //then
+        //when, then
         mvc.perform(put(url)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(updatedScheduleJson))
                 .andExpect(status().isNotFound());
     }
 
+    /**
+     * Test for getting no schedules
+     * @throws Exception throws Exception from MockMvc
+     */
     @Test
     public void getNoSchedules() throws Exception {
         //given
@@ -336,6 +379,10 @@ public class SchedulesControllerTest {
                 .andExpect(jsonPath("$.length()").value(0));
     }
 
+    /**
+     * Test for getting all schedules
+     * @throws Exception throws Exception from MockMvc
+     */
     @Test
     public void getAllSchedules() throws Exception {
         //given
@@ -364,8 +411,11 @@ public class SchedulesControllerTest {
 
         //when, then
         mvc.perform(get(url))
+                // status check
                 .andExpect(status().isOk())
+                // list length check
                 .andExpect(jsonPath("$.length()").value(2))
+                // first element check
                 .andExpect(jsonPath("$[0].id", is(savedSchedule.getId()), Long.class))
                 .andExpect(jsonPath("$[0].stellarNameKor", is(savedSchedule.getStellar().getNameKor())))
                 .andExpect(jsonPath("$[0].isFixedTime", is(savedSchedule.getIsFixedTime())))
@@ -374,6 +424,7 @@ public class SchedulesControllerTest {
                                 .format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss")))))
                 .andExpect(jsonPath("$[0].title", is(savedSchedule.getTitle())))
                 .andExpect(jsonPath("$[0].remark", is(savedSchedule.getRemark())))
+                // second element check
                 .andExpect(jsonPath("$[1].id", is(savedSchedule2.getId()), Long.class))
                 .andExpect(jsonPath("$[1].stellarNameKor", is(savedSchedule2.getStellar().getNameKor())))
                 .andExpect(jsonPath("$[1].isFixedTime", is(savedSchedule2.getIsFixedTime())))
@@ -384,6 +435,10 @@ public class SchedulesControllerTest {
                 .andExpect(jsonPath("$[1].remark", is(savedSchedule2.getRemark())));
     }
 
+    /**
+     * Test for getting all schedules with filters
+     * @throws Exception throws Exception from MockMvc
+     */
     @Test
     public void getAllSchedulesWithFilters() throws Exception {
         //given

@@ -17,7 +17,9 @@ import java.util.Comparator;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-
+/**
+ * Test class for {@link Schedule}.
+ */
 @ExtendWith(SpringExtension.class)
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
@@ -26,15 +28,23 @@ public class ScheduleTest {
     @Autowired
     private TestEntityManager entityManager;
 
+    /**
+     * Clean up entityManager after each test.
+     */
     @AfterEach
     public void cleanup() {
         entityManager.clear();
     }
 
+    /**
+     * Test for persisting the entity.
+     */
     @Test
     public void persist() {
 
-        // 1. Fixed time
+        // case 1. isFixedTime == true
+
+        //given
         Stellar stellar = Stellar.builder()
                 .nameKor("스텔라")
                 .nameEng("")
@@ -47,6 +57,7 @@ public class ScheduleTest {
         String title = "제목";
         String remark = "비고";
 
+        //when
         Schedule entity = Schedule.builder()
                 .stellar(stellar)
                 .isFixedTime(isFixedTime)
@@ -57,6 +68,7 @@ public class ScheduleTest {
         entityManager.persist(entity);
         entityManager.flush();
 
+        //then
         Schedule foundEntity = entityManager.find(Schedule.class, entity.getId());
         assertThat(foundEntity.getIsFixedTime()).isEqualTo(isFixedTime);
         assertThat(foundEntity.getStartDateTime()).isEqualTo(startDateTime);
@@ -72,11 +84,13 @@ public class ScheduleTest {
         assertThat(scheduleHistory.getTitle()).isEqualTo(title);
         assertThat(scheduleHistory.getRemark()).isEqualTo(remark);
 
-        // 2. Not Fixed time
+        // case 2. isFixedTime == false
 
+        //given
         startDateTime = LocalDateTime.of(2023,2,14,19,0);
         LocalDateTime expectedStartDateTime = startDateTime.truncatedTo(ChronoUnit.DAYS);
 
+        //when
         entity = Schedule.builder()
                 .stellar(stellar)
                 .isFixedTime(false)
@@ -87,6 +101,7 @@ public class ScheduleTest {
         entityManager.persist(entity);
         entityManager.flush();
 
+        //then
         foundEntity = entityManager.find(Schedule.class, entity.getId());
         assertThat(foundEntity.getIsFixedTime()).isEqualTo(false);
         assertThat(foundEntity.getStartDateTime()).isEqualTo(expectedStartDateTime);
@@ -103,9 +118,14 @@ public class ScheduleTest {
         assertThat(scheduleHistory.getRemark()).isEqualTo(remark);
     }
 
+    /**
+     * Test for updating the entity.
+     */
     @Test
     public void update() {
-        // 1. Fixed time
+        // case 1. isFixedTime == true
+
+        //given
         Stellar stellar = Stellar.builder()
                 .nameKor("스텔라")
                 .nameEng("")
@@ -120,9 +140,9 @@ public class ScheduleTest {
                 .title("제목")
                 .remark("비고")
                 .build();
-
         entityManager.persist(entity);
 
+        //when
         Boolean isFixedTime = true;
         LocalDateTime startDateTime = LocalDateTime.of(2023,2,14,19,0);
         String title = "수정 제목";
@@ -132,6 +152,7 @@ public class ScheduleTest {
 
         entityManager.persist(entity);
 
+        //then
         assertThat(entity.getIsFixedTime()).isEqualTo(isFixedTime);
         assertThat(entity.getStartDateTime()).isEqualTo(startDateTime);
         assertThat(entity.getTitle()).isEqualTo(title);
@@ -147,8 +168,9 @@ public class ScheduleTest {
         assertThat(scheduleHistory.getTitle()).isEqualTo(title);
         assertThat(scheduleHistory.getRemark()).isEqualTo(remark);
 
-        // 2. Not Fixed time
+        // case 2. isFixedTime == false
 
+        //given
         entity = Schedule.builder()
                 .stellar(stellar)
                 .isFixedTime(true)
@@ -162,10 +184,12 @@ public class ScheduleTest {
         startDateTime = LocalDateTime.of(2023,2,14,19,0);
         LocalDateTime expectedStartDateTime = startDateTime.truncatedTo(ChronoUnit.DAYS);
 
+        //when
         entity.update(false, startDateTime, title, remark);
 
         entityManager.persist(entity);
 
+        //then
         assertThat(entity.getIsFixedTime()).isEqualTo(false);
         assertThat(entity.getStartDateTime()).isEqualTo(expectedStartDateTime);
         assertThat(entity.getTitle()).isEqualTo(title);

@@ -19,6 +19,9 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+/**
+ * Test class for {@link StellarsController}.
+ */
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class StellarsControllerTest {
@@ -34,6 +37,9 @@ public class StellarsControllerTest {
 
     private MockMvc mvc;
 
+    /**
+     * Set up mvc before each test.
+     */
     @BeforeEach
     public void setup() {
         mvc = MockMvcBuilders
@@ -41,11 +47,18 @@ public class StellarsControllerTest {
                 .build();
     }
 
+    /**
+     * Clean up entityManager after each test.
+     */
     @AfterEach
-    public void tearDown() {
+    public void cleanup() {
         stellarRepository.deleteAll();
     }
 
+    /**
+     * Test for getting stellar
+     * @throws Exception throws Exception from MockMvc
+     */
     @Test
     public void getStellar() throws Exception {
         //given
@@ -70,5 +83,4 @@ public class StellarsControllerTest {
                 .andExpect(jsonPath("$.nameJpn", is(nameJpn)));
 
     }
-
 }
