@@ -106,7 +106,7 @@ public class ScheduleService {
     }
 
     /**
-     * Find all schedules with given filters in {@code requestDto}.
+     * Find all schedules not deleted with given filters in {@code requestDto}.
      * @param requestDto DTO that has filters
      * @return List of found entities with {@link ScheduleResponseDto} classes.
      */
@@ -115,7 +115,8 @@ public class ScheduleService {
         QSchedule schedule = QSchedule.schedule;
 
         var query = new JPAQuery<>(entityManager)
-                .from(schedule);
+                .from(schedule)
+                .where(schedule.isDeleted.eq(false));
 
         if (requestDto.getStellarId() != null) {
             query.where(schedule.stellar.id.eq(requestDto.getStellarId()));
