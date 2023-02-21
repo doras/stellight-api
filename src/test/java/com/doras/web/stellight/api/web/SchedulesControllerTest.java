@@ -323,6 +323,40 @@ public class SchedulesControllerTest {
     }
 
     /**
+     * Test for finding no elements all after deletion
+     * @throws Exception throws Exception from MockMvc
+     */
+    @Test
+    public void notFoundAllAfterDelete() throws Exception {
+        //given
+        Stellar stellar = stellarRepository.save(Stellar.builder()
+                .nameKor("한국 이름")
+                .nameEng("english name")
+                .nameJpn("日本語の名前")
+                .build());
+
+        Schedule schedule = Schedule.builder()
+                .stellar(stellar)
+                .isFixedTime(true)
+                .startDateTime(LocalDateTime.of(2023, 2, 14, 19, 0))
+                .title("스케줄의 이름")
+                .remark("스케줄에 대한 비고")
+                .build();
+        schedule.delete();
+
+        scheduleRepository.save(schedule);
+
+        String url = "http://localhost:" + port + "/api/v1/schedules";
+
+        //when, then
+        mvc.perform(get(url))
+                // status check
+                .andExpect(status().isOk())
+                // list length check
+                .andExpect(jsonPath("$.length()").value(0));
+    }
+
+    /**
      * Test for failure about updating after deletion
      * @throws Exception throws Exception from MockMvc
      */
