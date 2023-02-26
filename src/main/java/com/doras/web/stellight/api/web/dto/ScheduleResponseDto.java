@@ -11,6 +11,7 @@ import java.time.LocalDateTime;
 @Getter
 public class ScheduleResponseDto {
     private final Long id;
+    private final Long stellarId;
     private final String stellarNameKor;
     private final Boolean isFixedTime;
     private final LocalDateTime startDateTime;
@@ -19,6 +20,7 @@ public class ScheduleResponseDto {
 
     public ScheduleResponseDto(Schedule entity) {
         this.id = entity.getId();
+         this.stellarId = entity.getStellar().getId();
         this.stellarNameKor = entity.getStellar().getNameKor();
         this.isFixedTime = entity.getIsFixedTime();
         this.startDateTime = entity.getStartDateTime();
