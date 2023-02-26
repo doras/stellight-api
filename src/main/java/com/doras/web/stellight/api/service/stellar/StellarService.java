@@ -8,6 +8,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 /**
  * Service about {@link Stellar}.
  */
@@ -27,5 +30,14 @@ public class StellarService {
                 .orElseThrow(() -> new StellarNotFoundException(id));
 
         return new StellarResponseDto(entity);
+    }
+
+    /**
+     * Find all stellars.
+     * @return List of found entities with {@link StellarResponseDto} classes.
+     */
+    @Transactional(readOnly = true)
+    public List<StellarResponseDto> findAll() {
+        return stellarRepository.findAllByOrderById().stream().map(StellarResponseDto::new).collect(Collectors.toList());
     }
 }
