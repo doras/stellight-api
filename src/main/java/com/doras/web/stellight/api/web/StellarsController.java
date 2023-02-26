@@ -8,6 +8,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
+
 /**
  * REST controller about stellars.
  */
@@ -26,5 +28,14 @@ public class StellarsController {
     @GetMapping("/{id}")
     public StellarResponseDto findById(@PathVariable Long id) {
         return stellarService.findById(id);
+    }
+
+    /**
+     * Find all stellars.
+     * @return List of found entities with {@link StellarResponseDto} classes.
+     */
+    @GetMapping
+    public List<StellarResponseDto> findAll() {
+        return stellarService.findAll();
     }
 }

@@ -83,4 +83,43 @@ public class StellarsControllerTest {
                 .andExpect(jsonPath("$.nameJpn", is(nameJpn)));
 
     }
+
+    /**
+     * Test for getting all stellars
+     * @throws Exception throws Exception from MockMvc
+     */
+    @Test
+    public void getAllStellars() throws Exception {
+        //given
+        Stellar stellar = stellarRepository.save(Stellar.builder()
+                .nameKor("한국 이름")
+                .nameEng("english name")
+                .nameJpn("日本語の名前")
+                .build());
+
+        Stellar stellar2 = stellarRepository.save(Stellar.builder()
+                .nameKor("한국 이름2")
+                .nameEng("english name2")
+                .nameJpn("日本語の名前2")
+                .build());
+
+        String url = "http://localhost:" + port + "/api/v1/stellars";
+
+        //when, then
+        mvc.perform(get(url))
+                // status check
+                .andExpect(status().isOk())
+                // list length check
+                .andExpect(jsonPath("$.length()").value(2))
+                // first element check
+                .andExpect(jsonPath("$[0].id", is(stellar.getId()), Long.class))
+                .andExpect(jsonPath("$[0].nameKor", is(stellar.getNameKor())))
+                .andExpect(jsonPath("$[0].nameEng", is(stellar.getNameEng())))
+                .andExpect(jsonPath("$[0].nameJpn", is(stellar.getNameJpn())))
+                // second element check
+                .andExpect(jsonPath("$[1].id", is(stellar2.getId()), Long.class))
+                .andExpect(jsonPath("$[1].nameKor", is(stellar2.getNameKor())))
+                .andExpect(jsonPath("$[1].nameEng", is(stellar2.getNameEng())))
+                .andExpect(jsonPath("$[1].nameJpn", is(stellar2.getNameJpn())));
+    }
 }
