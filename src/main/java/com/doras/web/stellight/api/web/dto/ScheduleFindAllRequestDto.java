@@ -15,7 +15,7 @@ public class ScheduleFindAllRequestDto {
     /**
      * ID of stellar.
      */
-    private final Long stellarId;
+    private final Long[] stellarId;
 
     /**
      * a filter that means
