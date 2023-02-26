@@ -31,6 +31,8 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.is;
@@ -513,6 +515,16 @@ public class SchedulesControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(1))
                 .andExpect(jsonPath("$[0].id", is(savedSchedule.getId()), Long.class));
+
+        // stellarIds
+        String stellarIds = Stream.of(stellar.getId(), stellar2.getId())
+                .map(String::valueOf).collect(Collectors.joining(","));
+        mvc.perform(get(url)
+                        .param("stellarId", stellarIds))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(2))
+                .andExpect(jsonPath("$[0].id", is(savedSchedule.getId()), Long.class))
+                .andExpect(jsonPath("$[1].id", is(savedSchedule2.getId()), Long.class));
 
         // date after
         mvc.perform(get(url)

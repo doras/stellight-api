@@ -119,7 +119,7 @@ public class ScheduleService {
                 .where(schedule.isDeleted.eq(false));
 
         if (requestDto.getStellarId() != null) {
-            query.where(schedule.stellar.id.eq(requestDto.getStellarId()));
+            query.where(schedule.stellar.id.in(requestDto.getStellarId()));
         }
         if (requestDto.getStartDateTimeAfter() != null || requestDto.getStartDateTimeBefore() != null) {
             query.where(
