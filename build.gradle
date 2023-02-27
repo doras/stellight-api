@@ -24,6 +24,7 @@ dependencies {
     implementation "com.querydsl:querydsl-jpa"
     implementation "com.querydsl:querydsl-apt"
     testImplementation('org.springframework.boot:spring-boot-starter-test')
+    implementation('org.springframework.boot:spring-boot-starter-oauth2-client')
 }
 
 test {
