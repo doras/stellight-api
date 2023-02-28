@@ -5,13 +5,13 @@ import lombok.Getter;
 import javax.persistence.MappedSuperclass;
 
 /**
- * Deleted time super entity class.
- * Have {@code createdDateTime}, {@code modifiedDateTime} and {@link #isDeleted}.
+ * Deleted Date and ByUser super entity class.
+ * Have whether the entity is deleted or not as well as auditing information of {@link BaseDateByEntity}.
  * When using soft deletion, extend this class.
  */
 @Getter
 @MappedSuperclass
-public abstract class DeletedTimeEntity extends BaseTimeEntity {
+public abstract class DeletedDateByEntity extends BaseDateByEntity {
 
     /**
      * Soft deletion flag.

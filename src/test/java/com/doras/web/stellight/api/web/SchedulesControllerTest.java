@@ -16,9 +16,9 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.test.web.server.LocalServerPort;
-import org.springframework.http.*;
+import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -36,6 +36,7 @@ import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.is;
+import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -48,9 +49,6 @@ public class SchedulesControllerTest {
 
     @LocalServerPort
     private int port;
-
-    @Autowired
-    private TestRestTemplate restTemplate;
 
     @Autowired
     private TransactionTemplate transactionTemplate;
@@ -76,6 +74,7 @@ public class SchedulesControllerTest {
     public void setup() {
         mvc = MockMvcBuilders
                 .webAppContextSetup(context)
+                .apply(springSecurity())
                 .build();
     }
 
@@ -93,6 +92,7 @@ public class SchedulesControllerTest {
      * Test for saving schedule.
      */
     @Test
+    @WithMockUser(roles = "USER")
     public void saveSchedule() {
 
         //pre-load
@@ -125,13 +125,17 @@ public class SchedulesControllerTest {
                 String url = "http://localhost:" + port + "/api/v1/schedules";
 
                 //when
-                ResponseEntity<Long> responseEntity = restTemplate.postForEntity(url, requestDto, Long.class);
+                try {
+                    mvc.perform(post(url)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(new ObjectMapper().registerModule(new JavaTimeModule())
+                                    .writeValueAsString(requestDto)))
+                            .andExpect(status().isOk());
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
 
                 //then
-
-                // response check
-                assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.OK);
-                assertThat(responseEntity.getBody()).isGreaterThan(0L);
 
                 // schedule check
                 Schedule savedSchedule = scheduleRepository.findAll().get(0);
@@ -192,7 +196,8 @@ public class SchedulesControllerTest {
      * Test for updating schedule
      */
     @Test
-    public void updateSchedule() {
+    @WithMockUser(roles = "USER")
+    public void updateSchedule() throws Exception {
         //given
         Stellar stellar = stellarRepository.save(Stellar.builder()
                 .nameKor("한국 이름")
@@ -222,20 +227,17 @@ public class SchedulesControllerTest {
                 .remark(expectedRemark)
                 .build();
 
-        HttpEntity<ScheduleUpdateRequestDto> requestEntity = new HttpEntity<>(requestDto);
-
         //when
-        ResponseEntity<Long> responseEntity = restTemplate.exchange(url, HttpMethod.PUT, requestEntity, Long.class);
+        mvc.perform(put(url)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(new ObjectMapper().registerModule(new JavaTimeModule()).writeValueAsString(requestDto)))
+                .andExpect(status().isOk());
 
         //then
         // Because of lazy fetch about ScheduleHistory, must use additional transaction code.
         transactionTemplate.execute(new TransactionCallbackWithoutResult() {
             @Override
             protected void doInTransactionWithoutResult(TransactionStatus status) {
-
-                // response check
-                assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.OK);
-                assertThat(responseEntity.getBody()).isGreaterThan(0L);
 
                 // schedule check
                 Schedule modifiedSchedule = scheduleRepository.findAll().get(0);
@@ -263,6 +265,7 @@ public class SchedulesControllerTest {
      * @throws Exception throws Exception from MockMvc
      */
     @Test
+    @WithMockUser(roles = "USER")
     public void deleteSchedule() throws Exception {
         //given
         Stellar stellar = stellarRepository.save(Stellar.builder()
@@ -364,6 +367,7 @@ public class SchedulesControllerTest {
      * @throws Exception throws Exception from MockMvc
      */
     @Test
+    @WithMockUser(roles = "USER")
     public void notUpdateAfterDelete() throws Exception {
         //given
         Stellar stellar = stellarRepository.save(Stellar.builder()

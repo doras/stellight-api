@@ -1,6 +1,6 @@
 package com.doras.web.stellight.api.domain.schedule;
 
-import com.doras.web.stellight.api.domain.CreatedTimeEntity;
+import com.doras.web.stellight.api.domain.CreatedDateByEntity;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -16,7 +16,7 @@ import java.time.temporal.ChronoUnit;
 @Getter
 @NoArgsConstructor
 @Entity
-public class ScheduleHistory extends CreatedTimeEntity {
+public class ScheduleHistory extends CreatedDateByEntity {
 
     /**
      * Primary key

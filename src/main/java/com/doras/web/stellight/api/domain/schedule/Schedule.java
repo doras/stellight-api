@@ -1,6 +1,6 @@
 package com.doras.web.stellight.api.domain.schedule;
 
-import com.doras.web.stellight.api.domain.DeletedTimeEntity;
+import com.doras.web.stellight.api.domain.DeletedDateByEntity;
 import com.doras.web.stellight.api.domain.stellar.Stellar;
 import lombok.Builder;
 import lombok.Getter;
@@ -19,7 +19,7 @@ import java.util.HashSet;
 @Getter
 @NoArgsConstructor
 @Entity
-public class Schedule extends DeletedTimeEntity {
+public class Schedule extends DeletedDateByEntity {
 
     /**
      * Primary key
