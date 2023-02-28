@@ -35,6 +35,12 @@ public class Users extends BaseDateEntity {
     private Role role;
 
     /**
+     * Ban info, if null the user is not banned.
+     */
+    @OneToOne(mappedBy = "users")
+    private Ban ban;
+
+    /**
      * Constructor of Users
      * @param email values for {@link #email}
      * @param role values for {@link #role}

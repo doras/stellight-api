@@ -4,6 +4,7 @@ import com.doras.web.stellight.api.config.auth.dto.OAuthAttributes;
 import com.doras.web.stellight.api.config.auth.dto.SessionUser;
 import com.doras.web.stellight.api.domain.user.Users;
 import com.doras.web.stellight.api.domain.user.UsersRepository;
+import com.doras.web.stellight.api.exception.BannedUserException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
@@ -37,6 +38,12 @@ public class CustomOauth2UserService implements OAuth2UserService<OAuth2UserRequ
 
         // Get(and save if needed) user and add to session attribute.
         Users user = save(attributes);
+
+        // check ban
+        if (user.getBan() != null) {
+            throw new BannedUserException();
+        }
+
         httpSession.setAttribute("user", new SessionUser(user));
 
         return new DefaultOAuth2User(
