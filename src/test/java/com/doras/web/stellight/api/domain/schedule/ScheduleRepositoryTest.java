@@ -100,10 +100,10 @@ public class ScheduleRepositoryTest {
     }
 
     /**
-     * Test for saving BaseTimeEntity information in Schedule.
+     * Test for saving BaseDateByEntity information in Schedule.
      */
     @Test
-    public void saveBaseTimeEntity() {
+    public void saveBaseDateByEntity() {
         //given
         LocalDateTime now = LocalDateTime.of(2023, 2, 20, 0, 0, 0);
 

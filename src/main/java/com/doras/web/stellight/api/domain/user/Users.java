@@ -1,6 +1,6 @@
 package com.doras.web.stellight.api.domain.user;
 
-import com.doras.web.stellight.api.domain.BaseTimeEntity;
+import com.doras.web.stellight.api.domain.BaseDateEntity;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -13,7 +13,7 @@ import javax.persistence.*;
 @Getter
 @NoArgsConstructor
 @Entity
-public class Users extends BaseTimeEntity {
+public class Users extends BaseDateEntity {
     /**
      * Primary key
      */
