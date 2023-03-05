@@ -12,11 +12,11 @@ import java.io.Serializable;
 public class SessionUser implements Serializable {
 
     /**
-     * Email address of user
+     * SNS ID of user
      */
-    private final String email;
+    private final String snsId;
 
     public SessionUser(Users user) {
-        this.email = user.getEmail();
+        this.snsId = user.getSnsId();
     }
 }

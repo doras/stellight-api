@@ -22,6 +22,7 @@ class SpringSecurityAuditorAware implements AuditorAware<String> {
                 .filter(Authentication::isAuthenticated)
                 .map(Authentication::getPrincipal)
                 .map(p -> p instanceof DefaultOAuth2User ? (DefaultOAuth2User) p : null)
-                .map(u -> u.getAttribute("email"));
+                .map(u -> u.getAttribute("dbId"))
+                .map(String::valueOf);
     }
 }
