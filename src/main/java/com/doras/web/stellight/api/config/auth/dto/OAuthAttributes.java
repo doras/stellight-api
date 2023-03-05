@@ -23,15 +23,15 @@ public class OAuthAttributes {
     private final String nameAttributeKey;
 
     /**
-     * Email address of OAuth user
+     * SNS ID of OAuth user
      */
-    private final String email;
+    private final String snsId;
 
     @Builder
-    public OAuthAttributes(Map<String, Object> attributes, String nameAttributeKey, String email) {
+    public OAuthAttributes(Map<String, Object> attributes, String nameAttributeKey, String snsId) {
         this.attributes = attributes;
         this.nameAttributeKey = nameAttributeKey;
-        this.email = email;
+        this.snsId = snsId;
     }
 
     /**
@@ -52,7 +52,7 @@ public class OAuthAttributes {
         Map<String, Object> response = (Map<String, Object>) attributes.get("response");
 
         return OAuthAttributes.builder()
-                .email((String) response.get("email"))
+                .snsId((String) response.get("id"))
                 .attributes(response)
                 .nameAttributeKey("id")
                 .build();
@@ -64,7 +64,7 @@ public class OAuthAttributes {
      */
     public Users toEntity() {
         return Users.builder()
-                .email(email)
+                .snsId(snsId)
                 .role(Role.USER)
                 .build();
     }

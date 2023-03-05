@@ -56,12 +56,12 @@ public class CustomOauth2UserService implements OAuth2UserService<OAuth2UserRequ
     }
 
     /**
-     * Returns found user by email address and save user if it is new user.
+     * Returns found user by SNS ID and save user if it is new user.
      * @param attributes DTO with information about user
      * @return found user
      */
     private Users save(OAuthAttributes attributes) {
-        Users user = usersRepository.findByEmail(attributes.getEmail())
+        Users user = usersRepository.findBySnsId(attributes.getSnsId())
                 .orElse(attributes.toEntity());
 
         return usersRepository.save(user);

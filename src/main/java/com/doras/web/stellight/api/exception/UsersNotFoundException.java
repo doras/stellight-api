@@ -6,11 +6,11 @@ package com.doras.web.stellight.api.exception;
 public class UsersNotFoundException extends DataNotFoundException {
 
     /**
-     * Constructor with ID that data is not found by.
-     * Using default detailed message of {@link UsersNotFoundException} with given {@code email}.
-     * @param email the email that the data was attempted to be found but failed.
+     * Constructor with snsId that data is not found by.
+     * Using default detailed message of {@link UsersNotFoundException} with given {@code snsId}.
+     * @param snsId the snsId that the data was attempted to be found but failed.
      */
-    public UsersNotFoundException(String email) {
-        super("해당 사용자가 없습니다. email = " + email);
+    public UsersNotFoundException(String snsId) {
+        super("해당 사용자가 없습니다. snsId = " + snsId);
     }
 }

@@ -22,10 +22,10 @@ public class Users extends BaseDateEntity {
     private Long id;
 
     /**
-     * (Required) email address
+     * (Required) OAuth user identifier
      */
     @Column(nullable = false)
-    private String email;
+    private String snsId;
 
     /**
      * (Required) role of the user
@@ -42,12 +42,12 @@ public class Users extends BaseDateEntity {
 
     /**
      * Constructor of Users
-     * @param email values for {@link #email}
+     * @param snsId values for {@link #snsId}
      * @param role values for {@link #role}
      */
     @Builder
-    public Users(String email, Role role) {
-        this.email = email;
+    public Users(String snsId, Role role) {
+        this.snsId = snsId;
         this.role = role;
     }
 

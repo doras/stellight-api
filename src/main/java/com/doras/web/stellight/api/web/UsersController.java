@@ -3,7 +3,6 @@ package com.doras.web.stellight.api.web;
 import com.doras.web.stellight.api.config.auth.LoginUser;
 import com.doras.web.stellight.api.config.auth.dto.SessionUser;
 import com.doras.web.stellight.api.service.user.stellar.UserService;
-import com.doras.web.stellight.api.web.dto.UserResponseDto;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,11 +24,11 @@ public class UsersController {
     /**
      * Find user information of himself/herself
      * @param user session user DTO
-     * @return Information of found user in {@link UserResponseDto}
+     * @return {@code true} when the user is found. Otherwise, throw exception.
      */
     @GetMapping("/me")
-    public UserResponseDto findMe(@LoginUser SessionUser user) {
+    public boolean findMe(@LoginUser SessionUser user) {
         logger.info("find me");
-        return userService.findByEmail(user.getEmail());
+        return userService.existsBySnsId(user.getSnsId());
     }
 }
