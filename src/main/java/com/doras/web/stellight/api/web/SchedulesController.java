@@ -6,6 +6,8 @@ import com.doras.web.stellight.api.web.dto.ScheduleResponseDto;
 import com.doras.web.stellight.api.web.dto.ScheduleSaveRequestDto;
 import com.doras.web.stellight.api.web.dto.ScheduleUpdateRequestDto;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -17,6 +19,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/v1/schedules")
 public class SchedulesController {
+    protected final Logger logger = LoggerFactory.getLogger(getClass());
 
     private final ScheduleService scheduleService;
 
@@ -27,6 +30,7 @@ public class SchedulesController {
      */
     @PostMapping
     public Long save(@RequestBody ScheduleSaveRequestDto requestDto) {
+        logger.info("save schedule");
         return scheduleService.save(requestDto);
     }
 
@@ -37,6 +41,7 @@ public class SchedulesController {
      */
     @GetMapping("/{id}")
     public ScheduleResponseDto findById(@PathVariable Long id) {
+        logger.info("find schedule by id = {}", id);
         return scheduleService.findById(id);
     }
 
@@ -48,6 +53,7 @@ public class SchedulesController {
      */
     @PutMapping("/{id}")
     public Long update(@PathVariable Long id, @RequestBody ScheduleUpdateRequestDto requestDto) {
+        logger.info("update schedule id = {}", id);
         return scheduleService.update(id, requestDto);
     }
 
@@ -58,6 +64,7 @@ public class SchedulesController {
      */
     @DeleteMapping("/{id}")
     public Long delete(@PathVariable Long id) {
+        logger.info("delete schedule id = {}", id);
         scheduleService.delete(id);
         return id;
     }
@@ -69,6 +76,7 @@ public class SchedulesController {
      */
     @GetMapping
     public List<ScheduleResponseDto> findAll(ScheduleFindAllRequestDto requestDto) {
+        logger.info("find all schedules");
         return scheduleService.findAllSchedules(requestDto);
     }
 }
