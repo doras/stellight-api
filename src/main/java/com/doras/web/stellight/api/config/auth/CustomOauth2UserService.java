@@ -44,6 +44,9 @@ public class CustomOauth2UserService implements OAuth2UserService<OAuth2UserRequ
             throw new BannedUserException();
         }
 
+        // Add user id stored in DB for logging
+        attributes.getAttributes().put("dbId", user.getId());
+
         httpSession.setAttribute("user", new SessionUser(user));
 
         return new DefaultOAuth2User(
