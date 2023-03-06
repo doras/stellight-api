@@ -1,9 +1,9 @@
 package com.doras.web.stellight.api.web;
 
 import com.doras.web.stellight.api.config.auth.dto.SessionUser;
-import com.doras.web.stellight.api.domain.user.Role;
-import com.doras.web.stellight.api.domain.user.Users;
-import com.doras.web.stellight.api.domain.user.UsersRepository;
+import com.doras.web.stellight.api.domain.user.*;
+import com.doras.web.stellight.api.web.dto.BanSaveRequestDto;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpSession;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
@@ -19,8 +20,12 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
+import java.time.LocalDateTime;
+
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /**
@@ -35,6 +40,9 @@ public class UsersControllerTest {
 
     @Autowired
     private UsersRepository usersRepository;
+
+    @Autowired
+    private BanRepository banRepository;
 
     @Autowired
     private WebApplicationContext context;
@@ -57,6 +65,7 @@ public class UsersControllerTest {
      */
     @AfterEach
     public void cleanup() {
+        banRepository.deleteAll();
         usersRepository.deleteAll();
     }
 
@@ -92,5 +101,42 @@ public class UsersControllerTest {
         String url = "http://localhost:" + port + "/api/v1/users/me";
         mvc.perform(get(url))
                 .andExpect(status().is(HttpStatus.UNAUTHORIZED.value()));
+    }
+
+    /**
+     * Test banning user.
+     */
+    @Test
+    @WithMockUser(roles = "USER")
+    public void banUser() throws Exception {
+
+        //pre-load
+        Users savedUser = usersRepository.save(Users.builder()
+                .snsId("test-sns-id")
+                .role(Role.USER)
+                .build());
+
+        //given
+        Long userId = savedUser.getId();
+        LocalDateTime now = LocalDateTime.now();
+
+        String reason = "test reason";
+        BanSaveRequestDto requestDto = BanSaveRequestDto.builder()
+                .reason(reason)
+                .build();
+
+        String url = "http://localhost:" + port + "/api/v1/users/" + userId + "/ban";
+
+        //when
+        mvc.perform(post(url)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(new ObjectMapper().writeValueAsString(requestDto)))
+                .andExpect(status().isOk());
+
+        //then
+        Ban savedBan = banRepository.findAll().get(0);
+        assertThat(savedBan.getUsers().getId()).isEqualTo(userId);
+        assertThat(savedBan.getReason()).isEqualTo(reason);
+        assertThat(savedBan.getCreatedDateTime()).isAfter(now);
     }
 }
