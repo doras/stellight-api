@@ -7,8 +7,13 @@ import com.doras.web.stellight.api.domain.user.UsersRepository;
 import com.doras.web.stellight.api.exception.UsersNotFoundException;
 import com.doras.web.stellight.api.web.dto.BanSaveRequestDto;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.session.SessionInformation;
+import org.springframework.security.core.session.SessionRegistry;
+import org.springframework.security.oauth2.core.user.DefaultOAuth2User;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 /**
  * Service about {@link Users}.
@@ -19,6 +24,8 @@ public class UserService {
     private final UsersRepository usersRepository;
 
     private final BanRepository banRepository;
+
+    private final SessionRegistry sessionRegistry;
 
     /**
      * Check existence of user by snsId.
@@ -48,6 +55,16 @@ public class UserService {
                 .users(user)
                 .reason(requestDto.getReason())
                 .build());
+
+        // expire session of banned user
+        List<Object> principals = sessionRegistry.getAllPrincipals();
+        for (Object principal : principals) {
+            if (principal instanceof DefaultOAuth2User
+                    && id.equals(((DefaultOAuth2User) principal).getAttribute("dbId"))) {
+                sessionRegistry.getAllSessions(principal, false)
+                        .forEach(SessionInformation::expireNow);
+            }
+        }
 
         return ban.getId();
     }
