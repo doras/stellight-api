@@ -9,6 +9,8 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.session.SessionRegistry;
+import org.springframework.security.core.session.SessionRegistryImpl;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
 
@@ -24,6 +26,8 @@ import java.io.IOException;
 public class SecurityConfig {
     private final CustomOauth2UserService customOauth2UserService;
 
+    private final CustomSessionInformationExpiredStrategy customSessionInformationExpiredStrategy;
+
     /**
      * HttpSecurity filter chain configuration bean
      */
@@ -35,9 +39,10 @@ public class SecurityConfig {
                 .frameOptions(HeadersConfigurer.FrameOptionsConfig::disable)
             )
             .authorizeHttpRequests(authorize -> authorize
-                .mvcMatchers("/", "/favicon.ico", "/assets/**").permitAll() // allow for static resources
+                .mvcMatchers("/", "/favicon.ico", "/assets/**", "/statics/**").permitAll() // allow for static resources
                 .antMatchers("/h2-console/**").permitAll() // allow for h2 console
                 .mvcMatchers("/api/v1/users/me").authenticated() // only authenticated user for /user/me API
+                .mvcMatchers("/api/v1/users/**").hasRole(Role.ADMIN.name()) // only ADMIN can access to user API
                 .mvcMatchers(HttpMethod.GET, "/api/v1/**").permitAll() // permit all for GET API
                 .mvcMatchers(HttpMethod.POST, "/api/v1/**").hasRole(Role.USER.name()) // only USER can access to POST API
                 .mvcMatchers(HttpMethod.PUT, "/api/v1/**").hasRole(Role.USER.name()) // only USER can access to PUT API
@@ -54,6 +59,12 @@ public class SecurityConfig {
                 .userInfoEndpoint(userInfoEndpoint -> userInfoEndpoint
                     .userService(customOauth2UserService)
                 )
+                .failureUrl("/statics/login-fail.html")
+            )
+            .sessionManagement(session -> session
+                    .maximumSessions(1)
+                    .sessionRegistry(sessionRegistry())
+                    .expiredSessionStrategy(customSessionInformationExpiredStrategy)
             );
 
         return http.build();
@@ -65,7 +76,17 @@ public class SecurityConfig {
     private static class RestAuthenticationEntryPoint implements AuthenticationEntryPoint {
         @Override
         public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException) throws IOException {
-            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized");
+            int code = HttpServletResponse.SC_UNAUTHORIZED;
+            response.setContentType("application/json");
+            response.setCharacterEncoding("UTF-8");
+            response.setStatus(code);
+            String msg = "로그인 후 이용 가능합니다.";
+            response.getWriter().write("{\"code\":"+code+",\"message\": \"" + msg + "\"}");
         }
+    }
+
+    @Bean
+    public SessionRegistry sessionRegistry() {
+        return new SessionRegistryImpl();
     }
 }

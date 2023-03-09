@@ -3,12 +3,11 @@ package com.doras.web.stellight.api.web;
 import com.doras.web.stellight.api.config.auth.LoginUser;
 import com.doras.web.stellight.api.config.auth.dto.SessionUser;
 import com.doras.web.stellight.api.service.user.stellar.UserService;
+import com.doras.web.stellight.api.web.dto.BanSaveRequestDto;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 /**
  * REST controller about users.
@@ -30,5 +29,17 @@ public class UsersController {
     public boolean findMe(@LoginUser SessionUser user) {
         logger.info("find me");
         return userService.existsBySnsId(user.getSnsId());
+    }
+
+    /**
+     * Ban user with given id
+     * @param id id of user who would be banned
+     * @param requestDto DTO that has data to save
+     * @return id of saved ban entity
+     */
+    @PostMapping("/{id}/ban")
+    public Long banUser(@PathVariable Long id, @RequestBody BanSaveRequestDto requestDto) {
+        logger.info("ban user id = {}", id);
+        return userService.banUser(id, requestDto);
     }
 }
