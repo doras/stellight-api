@@ -42,6 +42,7 @@ public class SecurityConfig {
                 .mvcMatchers("/", "/favicon.ico", "/assets/**", "/statics/**").permitAll() // allow for static resources
                 .antMatchers("/h2-console/**").permitAll() // allow for h2 console
                 .mvcMatchers("/api/v1/users/me").authenticated() // only authenticated user for /user/me API
+                .mvcMatchers("/api/v1/users/**").hasRole(Role.ADMIN.name()) // only ADMIN can access to user API
                 .mvcMatchers(HttpMethod.GET, "/api/v1/**").permitAll() // permit all for GET API
                 .mvcMatchers(HttpMethod.POST, "/api/v1/**").hasRole(Role.USER.name()) // only USER can access to POST API
                 .mvcMatchers(HttpMethod.PUT, "/api/v1/**").hasRole(Role.USER.name()) // only USER can access to PUT API
