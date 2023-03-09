@@ -22,11 +22,12 @@ public class CustomSessionInformationExpiredStrategy implements SessionInformati
 
         // when method is not GET, 401 error with message.
         if (!request.getMethod().equals("GET")) {
+            int code = HttpServletResponse.SC_UNAUTHORIZED;
             String msg = "세션이 만료되었습니다.";
             response.setContentType("application/json");
             response.setCharacterEncoding("UTF-8");
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            response.getWriter().write("{\"error\": \"" + msg + "\"}");
+            response.setStatus(code);
+            response.getWriter().write("{\"code\":"+code+",\"message\": \"" + msg + "\"}");
         // when GET method, redirect to same url.
         } else {
             String queryString = request.getQueryString();

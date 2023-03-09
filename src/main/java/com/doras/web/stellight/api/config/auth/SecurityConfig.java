@@ -75,11 +75,12 @@ public class SecurityConfig {
     private static class RestAuthenticationEntryPoint implements AuthenticationEntryPoint {
         @Override
         public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException) throws IOException {
+            int code = HttpServletResponse.SC_UNAUTHORIZED;
             response.setContentType("application/json");
             response.setCharacterEncoding("UTF-8");
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.setStatus(code);
             String msg = "로그인 후 이용 가능합니다.";
-            response.getWriter().write("{\"error\": \"" + msg + "\"}");
+            response.getWriter().write("{\"code\":"+code+",\"message\": \"" + msg + "\"}");
         }
     }
 
