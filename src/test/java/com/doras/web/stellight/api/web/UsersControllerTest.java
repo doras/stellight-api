@@ -139,4 +139,31 @@ public class UsersControllerTest {
         assertThat(savedBan.getReason()).isEqualTo(reason);
         assertThat(savedBan.getCreatedDateTime()).isAfter(now);
     }
+
+    /**
+     * Test role of banning user.
+     */
+    @Test
+    @WithMockUser(roles = "USER")
+    public void failBanUserByRole() throws Exception {
+
+        //pre-load
+        Users savedUser = usersRepository.save(Users.builder()
+                .snsId("test-sns-id")
+                .role(Role.USER)
+                .build());
+
+        //given
+        BanSaveRequestDto requestDto = BanSaveRequestDto.builder()
+                .reason("test reason")
+                .build();
+
+        String url = "http://localhost:" + port + "/api/v1/users/" + savedUser.getId() + "/ban";
+
+        //when, then
+        mvc.perform(post(url)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(new ObjectMapper().writeValueAsString(requestDto)))
+                .andExpect(status().isForbidden());
+    }
 }
