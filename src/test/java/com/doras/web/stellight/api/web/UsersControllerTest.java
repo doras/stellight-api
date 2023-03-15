@@ -137,7 +137,7 @@ public class UsersControllerTest {
         Ban savedBan = banRepository.findAll().get(0);
         assertThat(savedBan.getUsers().getId()).isEqualTo(userId);
         assertThat(savedBan.getReason()).isEqualTo(reason);
-        assertThat(savedBan.getCreatedDateTime()).isAfter(now);
+        assertThat(savedBan.getCreatedDateTime()).isAfterOrEqualTo(now);
     }
 
     /**

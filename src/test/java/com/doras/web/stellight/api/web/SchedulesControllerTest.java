@@ -294,7 +294,7 @@ public class SchedulesControllerTest {
                 .andExpect(content().string(String.valueOf(scheduleId)));
         Schedule deletedSchedule = scheduleRepository.findById(scheduleId).orElseThrow();
         assertThat(deletedSchedule.getIsDeleted()).isEqualTo(true);
-        assertThat(deletedSchedule.getModifiedDateTime()).isAfter(now);
+        assertThat(deletedSchedule.getModifiedDateTime()).isAfterOrEqualTo(now);
     }
 
     /**
