@@ -14,18 +14,31 @@ repositories {
 }
 
 dependencies {
+    // default starters
     implementation('org.springframework.boot:spring-boot-starter-web')
     implementation('org.springframework.boot:spring-boot-starter-data-jpa')
-    compileOnly('org.projectlombok:lombok')
-    annotationProcessor('org.projectlombok:lombok')
-    implementation('com.h2database:h2')
-    implementation('com.fasterxml.jackson.datatype:jackson-datatype-jsr310')
-    // 3. querydsl dependencies 추가
-    implementation "com.querydsl:querydsl-jpa"
-    implementation "com.querydsl:querydsl-apt"
     testImplementation('org.springframework.boot:spring-boot-starter-test')
     implementation('org.springframework.boot:spring-boot-starter-oauth2-client')
+
+    // security
     testImplementation("org.springframework.security:spring-security-test")
+
+    // lombok
+    compileOnly('org.projectlombok:lombok')
+    annotationProcessor('org.projectlombok:lombok')
+
+    // h2
+    implementation('com.h2database:h2')
+
+    // jackson
+    implementation('com.fasterxml.jackson.datatype:jackson-datatype-jsr310')
+
+    // querydsl dependencies
+    implementation "com.querydsl:querydsl-jpa"
+    implementation "com.querydsl:querydsl-apt"
+
+    // MariaDB
+    implementation("org.mariadb.jdbc:mariadb-java-client")
 }
 
 test {
