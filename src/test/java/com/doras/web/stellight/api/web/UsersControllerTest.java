@@ -107,7 +107,7 @@ public class UsersControllerTest {
      * Test banning user.
      */
     @Test
-    @WithMockUser(roles = "USER")
+    @WithMockUser(roles = "ADMIN")
     public void banUser() throws Exception {
 
         //pre-load
