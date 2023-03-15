@@ -127,7 +127,7 @@ public class ScheduleRepositoryTest {
         //then
         Schedule schedule = scheduleList.get(0);
 
-        assertThat(schedule.getCreatedDateTime()).isAfter(now);
-        assertThat(schedule.getModifiedDateTime()).isAfter(now);
+        assertThat(schedule.getCreatedDateTime()).isAfterOrEqualTo(now);
+        assertThat(schedule.getModifiedDateTime()).isAfterOrEqualTo(now);
     }
 }

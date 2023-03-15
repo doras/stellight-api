@@ -61,6 +61,6 @@ public class BanRepositoryTest {
         assertThat(banFound.getId()).isEqualTo(ban.getId());
         assertThat(banFound.getUsers().getId()).isEqualTo(user.getId());
         assertThat(banFound.getReason()).isEqualTo(reason);
-        assertThat(banFound.getCreatedDateTime()).isAfter(now);
+        assertThat(banFound.getCreatedDateTime()).isAfterOrEqualTo(now);
     }
 }

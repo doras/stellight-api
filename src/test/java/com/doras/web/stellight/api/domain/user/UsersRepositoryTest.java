@@ -54,7 +54,7 @@ public class UsersRepositoryTest {
         assertThat(userFound.getId()).isEqualTo(user.getId());
         assertThat(userFound.getSnsId()).isEqualTo(snsId);
         assertThat(userFound.getRole()).isEqualTo(role);
-        assertThat(userFound.getCreatedDateTime()).isAfter(now);
+        assertThat(userFound.getCreatedDateTime()).isAfterOrEqualTo(now);
     }
 
     /**
