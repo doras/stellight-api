@@ -65,7 +65,6 @@ configurations {
     querydsl.extendsFrom compileClasspath
 }
 
-jar {
-    enabled = true
-    archiveClassifier.set('')
+tasks.named("jar") {
+    enabled = false
 }
