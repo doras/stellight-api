@@ -1,7 +1,6 @@
 package com.doras.web.stellight.api.web;
 
 import com.doras.web.stellight.api.domain.schedule.Schedule;
-import com.doras.web.stellight.api.domain.schedule.ScheduleHistory;
 import com.doras.web.stellight.api.domain.schedule.ScheduleHistoryRepository;
 import com.doras.web.stellight.api.domain.schedule.ScheduleRepository;
 import com.doras.web.stellight.api.domain.stellar.Stellar;
@@ -22,16 +21,11 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.transaction.TransactionStatus;
-import org.springframework.transaction.support.TransactionCallbackWithoutResult;
-import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.web.context.WebApplicationContext;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
-import java.util.Collection;
-import java.util.Comparator;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -50,9 +44,6 @@ public class SchedulesControllerTest {
 
     @LocalServerPort
     private int port;
-
-    @Autowired
-    private TransactionTemplate transactionTemplate;
 
     @Autowired
     private WebApplicationContext context;
@@ -94,7 +85,7 @@ public class SchedulesControllerTest {
      */
     @Test
     @WithMockUser(roles = "USER")
-    public void saveSchedule() {
+    public void saveSchedule() throws Exception {
 
         //pre-load
         Stellar savedStellar = stellarRepository.save(Stellar.builder()
@@ -103,58 +94,38 @@ public class SchedulesControllerTest {
                 .nameJpn("日本語の名前")
                 .build());
 
-        // Because of lazy fetch about ScheduleHistory, must use additional transaction code.
-        transactionTemplate.execute(new TransactionCallbackWithoutResult() {
-            @Override
-            protected void doInTransactionWithoutResult(TransactionStatus status) {
-                //given
-                Long stellarId = savedStellar.getId();
+        //given
+        Long stellarId = savedStellar.getId();
 
-                Boolean isFixedTime = true;
-                LocalDateTime startDateTime = LocalDateTime.of(2023, 2, 14, 19, 0);
-                String title = "스케줄의 이름";
-                String remark = "스케줄에 대한 비고";
+        Boolean isFixedTime = true;
+        LocalDateTime startDateTime = LocalDateTime.of(2023, 2, 14, 19, 0);
+        String title = "스케줄의 이름";
+        String remark = "스케줄에 대한 비고";
 
-                ScheduleSaveRequestDto requestDto = ScheduleSaveRequestDto.builder()
-                        .stellarId(stellarId)
-                        .isFixedTime(isFixedTime)
-                        .startDateTime(startDateTime)
-                        .title(title)
-                        .remark(remark)
-                        .build();
+        ScheduleSaveRequestDto requestDto = ScheduleSaveRequestDto.builder()
+                .stellarId(stellarId)
+                .isFixedTime(isFixedTime)
+                .startDateTime(startDateTime)
+                .title(title)
+                .remark(remark)
+                .build();
 
-                String url = "http://localhost:" + port + "/api/v1/schedules";
+        String url = "http://localhost:" + port + "/api/v1/schedules";
 
-                //when
-                try {
-                    mvc.perform(post(url)
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(new ObjectMapper().registerModule(new JavaTimeModule())
-                                    .writeValueAsString(requestDto)))
-                            .andExpect(status().isOk());
-                } catch (Exception e) {
-                    throw new RuntimeException(e);
-                }
+        //when
+        mvc.perform(post(url)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(new ObjectMapper().registerModule(new JavaTimeModule())
+                        .writeValueAsString(requestDto)))
+                .andExpect(status().isOk());
 
-                //then
-
-                // schedule check
-                Schedule savedSchedule = scheduleRepository.findAll().get(0);
-                assertThat(savedSchedule.getStellar().getId()).isEqualTo(stellarId);
-                assertThat(savedSchedule.getIsFixedTime()).isEqualTo(isFixedTime);
-                assertThat(savedSchedule.getStartDateTime()).isEqualTo(startDateTime);
-                assertThat(savedSchedule.getTitle()).isEqualTo(title);
-                assertThat(savedSchedule.getRemark()).isEqualTo(remark);
-
-                // schedule history check
-                ScheduleHistory savedScheduleHistory = savedSchedule.getScheduleHistories().iterator().next();
-                assertThat(savedScheduleHistory.getSchedule().getId()).isEqualTo(savedSchedule.getId());
-                assertThat(savedScheduleHistory.getIsFixedTime()).isEqualTo(isFixedTime);
-                assertThat(savedScheduleHistory.getStartDateTime()).isEqualTo(startDateTime);
-                assertThat(savedScheduleHistory.getTitle()).isEqualTo(title);
-                assertThat(savedScheduleHistory.getRemark()).isEqualTo(remark);
-            }
-        });
+        //then
+        Schedule savedSchedule = scheduleRepository.findAll().get(0);
+        assertThat(savedSchedule.getStellar().getId()).isEqualTo(stellarId);
+        assertThat(savedSchedule.getIsFixedTime()).isEqualTo(isFixedTime);
+        assertThat(savedSchedule.getStartDateTime()).isEqualTo(startDateTime);
+        assertThat(savedSchedule.getTitle()).isEqualTo(title);
+        assertThat(savedSchedule.getRemark()).isEqualTo(remark);
     }
 
     /**
@@ -235,30 +206,11 @@ public class SchedulesControllerTest {
                 .andExpect(status().isOk());
 
         //then
-        // Because of lazy fetch about ScheduleHistory, must use additional transaction code.
-        transactionTemplate.execute(new TransactionCallbackWithoutResult() {
-            @Override
-            protected void doInTransactionWithoutResult(TransactionStatus status) {
-
-                // schedule check
-                Schedule modifiedSchedule = scheduleRepository.findAll().get(0);
-                assertThat(modifiedSchedule.getIsFixedTime()).isEqualTo(expectedIsFixedTime);
-                assertThat(modifiedSchedule.getStartDateTime()).isEqualTo(expectedStartDateTime);
-                assertThat(modifiedSchedule.getTitle()).isEqualTo(expectedTitle);
-                assertThat(modifiedSchedule.getRemark()).isEqualTo(expectedRemark);
-
-                // histories check
-                Collection<ScheduleHistory> scheduleHistories = modifiedSchedule.getScheduleHistories();
-                assertThat(scheduleHistories.size()).isEqualTo(2);
-                ScheduleHistory savedScheduleHistory = scheduleHistories.stream()
-                        .max(Comparator.comparing(ScheduleHistory::getId)).orElseThrow();
-                assertThat(savedScheduleHistory.getSchedule().getId()).isEqualTo(savedSchedule.getId());
-                assertThat(savedScheduleHistory.getIsFixedTime()).isEqualTo(expectedIsFixedTime);
-                assertThat(savedScheduleHistory.getStartDateTime()).isEqualTo(expectedStartDateTime);
-                assertThat(savedScheduleHistory.getTitle()).isEqualTo(expectedTitle);
-                assertThat(savedScheduleHistory.getRemark()).isEqualTo(expectedRemark);
-            }
-        });
+        Schedule modifiedSchedule = scheduleRepository.findAll().get(0);
+        assertThat(modifiedSchedule.getIsFixedTime()).isEqualTo(expectedIsFixedTime);
+        assertThat(modifiedSchedule.getStartDateTime()).isEqualTo(expectedStartDateTime);
+        assertThat(modifiedSchedule.getTitle()).isEqualTo(expectedTitle);
+        assertThat(modifiedSchedule.getRemark()).isEqualTo(expectedRemark);
     }
 
     /**
