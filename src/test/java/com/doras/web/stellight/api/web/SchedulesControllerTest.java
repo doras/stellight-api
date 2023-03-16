@@ -29,6 +29,7 @@ import org.springframework.web.context.WebApplicationContext;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.stream.Collectors;
@@ -284,7 +285,7 @@ public class SchedulesControllerTest {
 
         Long scheduleId = savedSchedule.getId();
 
-        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime now = LocalDateTime.now().truncatedTo(ChronoUnit.MILLIS);
 
         String url = "http://localhost:" + port + "/api/v1/schedules/" + scheduleId;
 
