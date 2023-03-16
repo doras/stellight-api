@@ -64,3 +64,8 @@ configurations {
     }
     querydsl.extendsFrom compileClasspath
 }
+
+jar {
+    enabled = true
+    archiveClassifier.set('')
+}
