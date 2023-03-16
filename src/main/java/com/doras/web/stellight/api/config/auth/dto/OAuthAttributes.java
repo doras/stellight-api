@@ -49,6 +49,7 @@ public class OAuthAttributes {
      * @return created instance
      */
     private static OAuthAttributes ofNaver(Map<String, Object> attributes) {
+        @SuppressWarnings("unchecked")
         Map<String, Object> response = (Map<String, Object>) attributes.get("response");
 
         return OAuthAttributes.builder()
