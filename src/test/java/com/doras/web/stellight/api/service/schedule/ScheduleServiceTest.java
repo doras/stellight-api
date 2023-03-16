@@ -347,7 +347,7 @@ public class ScheduleServiceTest {
                 .remark("스케줄 비고 2")
                 .build());
 
-        ScheduleFindAllRequestDto requestDto = new ScheduleFindAllRequestDto();
+        ScheduleFindAllRequestDto requestDto = ScheduleFindAllRequestDto.builder().build();
 
         // when
         List<ScheduleResponseDto> result = scheduleService.findAllSchedules(requestDto);
