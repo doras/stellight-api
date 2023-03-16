@@ -13,6 +13,7 @@ import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.Collection;
 import java.util.List;
 
@@ -105,7 +106,7 @@ public class ScheduleRepositoryTest {
     @Test
     public void saveBaseDateByEntity() {
         //given
-        LocalDateTime now = LocalDateTime.of(2023, 2, 20, 0, 0, 0);
+        LocalDateTime now = LocalDateTime.now().truncatedTo(ChronoUnit.MILLIS);
 
         Stellar stellar = stellarRepository.save(Stellar.builder()
                 .nameKor("테스트 한국어")
