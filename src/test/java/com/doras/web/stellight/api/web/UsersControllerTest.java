@@ -22,6 +22,7 @@ import org.springframework.web.context.WebApplicationContext;
 
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.Collections;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
@@ -80,7 +81,7 @@ public class UsersControllerTest {
         //given
         Users user = usersRepository.save(Users.builder()
                 .snsId("test-sns-id")
-                .role(Role.USER)
+                .roles(Collections.singleton(Role.USER))
                 .build());
 
         MockHttpSession mockHttpSession = new MockHttpSession();
@@ -114,7 +115,7 @@ public class UsersControllerTest {
         //pre-load
         Users savedUser = usersRepository.save(Users.builder()
                 .snsId("test-sns-id")
-                .role(Role.USER)
+                .roles(Collections.singleton(Role.USER))
                 .build());
 
         //given
@@ -151,7 +152,7 @@ public class UsersControllerTest {
         //pre-load
         Users savedUser = usersRepository.save(Users.builder()
                 .snsId("test-sns-id")
-                .role(Role.USER)
+                .roles(Collections.singleton(Role.USER))
                 .build());
 
         //given

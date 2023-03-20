@@ -9,6 +9,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.Collections;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -45,7 +46,7 @@ public class BanRepositoryTest {
 
         Users user = usersRepository.save(Users.builder()
                 .snsId("test-sns-oauth-id")
-                .role(Role.USER)
+                .roles(Collections.singleton(Role.USER))
                 .build());
 
         String reason = "test reason";
