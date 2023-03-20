@@ -40,6 +40,7 @@ public class SecurityConfig {
             )
             .authorizeHttpRequests(authorize -> authorize
                 .mvcMatchers("/", "/favicon.ico", "/assets/**", "/statics/**").permitAll() // allow for static resources
+                .mvcMatchers("/api/profile").permitAll() // allow for profile api
                 .antMatchers("/h2-console/**").permitAll() // allow for h2 console
                 .mvcMatchers("/api/v1/users/me").authenticated() // only authenticated user for /user/me API
                 .mvcMatchers("/api/v1/users/**").hasRole(Role.ADMIN.name()) // only ADMIN can access to user API
