@@ -5,6 +5,7 @@ import com.doras.web.stellight.api.domain.user.Users;
 import lombok.Builder;
 import lombok.Getter;
 
+import java.util.Collections;
 import java.util.Map;
 
 /**
@@ -66,7 +67,7 @@ public class OAuthAttributes {
     public Users toEntity() {
         return Users.builder()
                 .snsId(snsId)
-                .role(Role.USER)
+                .roles(Collections.singleton(Role.USER))
                 .build();
     }
 }
