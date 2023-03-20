@@ -6,7 +6,7 @@ plugins {
 }
 
 group = 'com.doras.web'
-version = '1.0-SNAPSHOT'
+version = '1.0-SNAPSHOT-'+new Date().format("yyyyMMddHHmmss")
 sourceCompatibility = '11'
 
 repositories {
