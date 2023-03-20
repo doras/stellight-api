@@ -16,7 +16,7 @@ import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 
 import javax.servlet.http.HttpSession;
-import java.util.Collections;
+import java.util.stream.Collectors;
 
 /**
  * custom OAuth2 user service class
@@ -50,7 +50,7 @@ public class CustomOauth2UserService implements OAuth2UserService<OAuth2UserRequ
         httpSession.setAttribute("user", new SessionUser(user));
 
         return new DefaultOAuth2User(
-                Collections.singleton(new SimpleGrantedAuthority(user.getRoleKey())),
+                user.getRoleKeys().map(SimpleGrantedAuthority::new).collect(Collectors.toSet()),
                 attributes.getAttributes(),
                 attributes.getNameAttributeKey());
     }

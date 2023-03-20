@@ -10,7 +10,9 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -41,10 +43,10 @@ public class UsersRepositoryTest {
         LocalDateTime now = LocalDateTime.now().truncatedTo(ChronoUnit.MILLIS);
 
         String snsId = "test-sns-oauth-id";
-        Role role = Role.USER;
+        Set<Role> roles = Collections.singleton(Role.USER);
         Users user = usersRepository.save(Users.builder()
                 .snsId(snsId)
-                .role(role)
+                .roles(roles)
                 .build());
 
         //when
@@ -54,7 +56,7 @@ public class UsersRepositoryTest {
         Users userFound = usersList.get(0);
         assertThat(userFound.getId()).isEqualTo(user.getId());
         assertThat(userFound.getSnsId()).isEqualTo(snsId);
-        assertThat(userFound.getRole()).isEqualTo(role);
+        assertThat(userFound.getRoles()).isEqualTo(roles);
         assertThat(userFound.getCreatedDateTime()).isAfterOrEqualTo(now);
     }
 
@@ -65,10 +67,10 @@ public class UsersRepositoryTest {
     public void findBySnsId() {
         //given
         String snsId = "test-sns-oauth-id";
-        Role role = Role.USER;
+        Set<Role> roles = Collections.singleton(Role.USER);
         Users user = usersRepository.save(Users.builder()
                 .snsId(snsId)
-                .role(role)
+                .roles(roles)
                 .build());
 
         //when
@@ -77,6 +79,6 @@ public class UsersRepositoryTest {
         //then
         assertThat(userFound.getId()).isEqualTo(user.getId());
         assertThat(userFound.getSnsId()).isEqualTo(snsId);
-        assertThat(userFound.getRole()).isEqualTo(role);
+        assertThat(userFound.getRoles()).isEqualTo(roles);
     }
 }

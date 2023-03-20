@@ -6,6 +6,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
+import java.util.Set;
+import java.util.stream.Stream;
 
 /**
  * User entity.
@@ -28,11 +30,14 @@ public class Users extends BaseDateEntity {
     private String snsId;
 
     /**
-     * (Required) role of the user
+     * (Required) roles of the user
      */
+    @ElementCollection(targetClass = Role.class, fetch = FetchType.EAGER)
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private Role role;
+    @CollectionTable(name = "user_role",
+            joinColumns = @JoinColumn(name = "user_id"))
+    @Column(name = "role")
+    private Set<Role> roles;
 
     /**
      * Ban info, if null the user is not banned.
@@ -43,19 +48,19 @@ public class Users extends BaseDateEntity {
     /**
      * Constructor of Users
      * @param snsId values for {@link #snsId}
-     * @param role values for {@link #role}
+     * @param roles values for {@link #roles}
      */
     @Builder
-    public Users(String snsId, Role role) {
+    public Users(String snsId, Set<Role> roles) {
         this.snsId = snsId;
-        this.role = role;
+        this.roles = roles;
     }
 
     /**
-     * Get key of {@link #role}
-     * @return key of role
+     * Get keys of {@link #roles}
+     * @return keys of roles
      */
-    public String getRoleKey() {
-        return this.role.getKey();
+    public Stream<String> getRoleKeys() {
+        return this.roles.stream().map(Role::getKey);
     }
 }
