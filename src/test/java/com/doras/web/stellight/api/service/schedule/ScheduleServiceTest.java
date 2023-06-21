@@ -70,6 +70,9 @@ public class ScheduleServiceTest {
                 .nameKor("한국 이름")
                 .nameEng("english name")
                 .nameJpn("日本語の名前")
+                .generation((byte)2)
+                .debutOrder((byte)1)
+                .personalColor("ffddaa")
                 .build());
 
         Long stellarId = savedStellar.getId();
@@ -148,6 +151,9 @@ public class ScheduleServiceTest {
                 .nameKor("한국 이름")
                 .nameEng("english name")
                 .nameJpn("日本語の名前")
+                .generation((byte)2)
+                .debutOrder((byte)1)
+                .personalColor("ffddaa")
                 .build());
 
         Boolean isFixedTime = true;
@@ -196,6 +202,9 @@ public class ScheduleServiceTest {
                 .nameKor("한국 이름")
                 .nameEng("english name")
                 .nameJpn("日本語の名前")
+                .generation((byte)2)
+                .debutOrder((byte)1)
+                .personalColor("ffddaa")
                 .build());
 
         Schedule savedSchedule = scheduleRepository.save(Schedule.builder()
@@ -285,6 +294,9 @@ public class ScheduleServiceTest {
                 .nameKor("한국 이름")
                 .nameEng("english name")
                 .nameJpn("日本語の名前")
+                .generation((byte)2)
+                .debutOrder((byte)1)
+                .personalColor("ffddaa")
                 .build());
 
         Schedule schedule = scheduleRepository.save(Schedule.builder()
@@ -329,6 +341,9 @@ public class ScheduleServiceTest {
                 .nameKor("한국 이름")
                 .nameEng("english name")
                 .nameJpn("日本語の名前")
+                .generation((byte)2)
+                .debutOrder((byte)1)
+                .personalColor("ffddaa")
                 .build());
 
         Schedule savedSchedule = scheduleRepository.save(Schedule.builder()
@@ -370,12 +385,18 @@ public class ScheduleServiceTest {
                 .nameKor("한국 이름")
                 .nameEng("english name")
                 .nameJpn("日本語の名前")
+                .generation((byte)2)
+                .debutOrder((byte)1)
+                .personalColor("ffddaa")
                 .build());
 
         Stellar savedStellar2 = stellarRepository.save(Stellar.builder()
                 .nameKor("한국 이름2")
                 .nameEng("english name2")
                 .nameJpn("日本語の名前2")
+                .generation((byte)1)
+                .debutOrder((byte)2)
+                .personalColor("ffddaa")
                 .build());
 
         Schedule savedSchedule = scheduleRepository.save(Schedule.builder()

@@ -40,6 +40,23 @@ public class Stellar {
     private String nameJpn;
 
     /**
+     * A generation number that the stellar belongs to
+     */
+    @Column(nullable = false)
+    private Byte generation;
+
+    /**
+     * Order of debut in same generation
+     */
+    private Byte debutOrder;
+
+    /**
+     * Personal color in 6-digit hex format
+     */
+    @Column(length = 6)
+    private String personalColor;
+
+    /**
      * Relationship to {@link Schedule}, the schedules of this Stellar.
      */
     @OneToMany(mappedBy = "stellar", fetch = FetchType.LAZY)
@@ -47,14 +64,14 @@ public class Stellar {
 
     /**
      * Constructor of Schedule.
-     * @param nameKor Values for {@link #nameKor}.
-     * @param nameEng Values for {@link #nameEng}.
-     * @param nameJpn Values for {@link #nameJpn}.
      */
     @Builder
-    public Stellar(String nameKor, String nameEng, String nameJpn) {
+    public Stellar(String nameKor, String nameEng, String nameJpn, Byte generation, Byte debutOrder, String personalColor) {
         this.nameKor = nameKor;
         this.nameEng = nameEng;
         this.nameJpn = nameJpn;
+        this.generation = generation;
+        this.debutOrder = debutOrder;
+        this.personalColor = personalColor;
     }
 }

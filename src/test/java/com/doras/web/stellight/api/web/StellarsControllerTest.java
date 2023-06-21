@@ -65,11 +65,17 @@ public class StellarsControllerTest {
         String nameKor = "한국 이름";
         String nameEng = "english name";
         String nameJpn = "日本語の名前";
+        Byte generation = 2;
+        Byte debutOrder = 1;
+        String personalColor = "ffddaa";
 
         Stellar savedStellar = stellarRepository.save(Stellar.builder()
                 .nameKor(nameKor)
                 .nameEng(nameEng)
                 .nameJpn(nameJpn)
+                .generation(generation)
+                .debutOrder(debutOrder)
+                .personalColor(personalColor)
                 .build());
         Long readId = savedStellar.getId();
 
@@ -80,7 +86,10 @@ public class StellarsControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.nameKor", is(nameKor)))
                 .andExpect(jsonPath("$.nameEng", is(nameEng)))
-                .andExpect(jsonPath("$.nameJpn", is(nameJpn)));
+                .andExpect(jsonPath("$.nameJpn", is(nameJpn)))
+                .andExpect(jsonPath("$.generation", is((int)generation)))
+                .andExpect(jsonPath("$.debutOrder", is((int)debutOrder)))
+                .andExpect(jsonPath("$.personalColor", is(personalColor)));
 
     }
 
@@ -95,12 +104,18 @@ public class StellarsControllerTest {
                 .nameKor("한국 이름")
                 .nameEng("english name")
                 .nameJpn("日本語の名前")
+                .generation((byte)2)
+                .debutOrder((byte)1)
+                .personalColor("ffddaa")
                 .build());
 
         Stellar stellar2 = stellarRepository.save(Stellar.builder()
                 .nameKor("한국 이름2")
                 .nameEng("english name2")
                 .nameJpn("日本語の名前2")
+                .generation((byte)2)
+                .debutOrder((byte)2)
+                .personalColor("ffddaa")
                 .build());
 
         String url = "http://localhost:" + port + "/api/v1/stellars";
@@ -116,10 +131,16 @@ public class StellarsControllerTest {
                 .andExpect(jsonPath("$[0].nameKor", is(stellar.getNameKor())))
                 .andExpect(jsonPath("$[0].nameEng", is(stellar.getNameEng())))
                 .andExpect(jsonPath("$[0].nameJpn", is(stellar.getNameJpn())))
+                .andExpect(jsonPath("$[0].generation", is((int)stellar.getGeneration())))
+                .andExpect(jsonPath("$[0].debutOrder", is((int)stellar.getDebutOrder())))
+                .andExpect(jsonPath("$[0].personalColor", is(stellar.getPersonalColor())))
                 // second element check
                 .andExpect(jsonPath("$[1].id", is(stellar2.getId()), Long.class))
                 .andExpect(jsonPath("$[1].nameKor", is(stellar2.getNameKor())))
                 .andExpect(jsonPath("$[1].nameEng", is(stellar2.getNameEng())))
-                .andExpect(jsonPath("$[1].nameJpn", is(stellar2.getNameJpn())));
+                .andExpect(jsonPath("$[1].nameJpn", is(stellar2.getNameJpn())))
+                .andExpect(jsonPath("$[1].generation", is((int)stellar2.getGeneration())))
+                .andExpect(jsonPath("$[1].debutOrder", is((int)stellar2.getDebutOrder())))
+                .andExpect(jsonPath("$[1].personalColor", is(stellar2.getPersonalColor())));
     }
 }
