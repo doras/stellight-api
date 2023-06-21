@@ -38,11 +38,17 @@ public class StellarRepositoryTest {
         String nameKor = "테스트 한국어";
         String nameEng = "test english";
         String nameJpn = "テストの日本語";
+        Byte generation = 2;
+        Byte debutOrder = 1;
+        String personalColor = "00ff66";
 
         stellarRepository.save(Stellar.builder()
                 .nameKor(nameKor)
                 .nameEng(nameEng)
                 .nameJpn(nameJpn)
+                .generation(generation)
+                .debutOrder(debutOrder)
+                .personalColor(personalColor)
                 .build());
 
         //when
@@ -53,5 +59,8 @@ public class StellarRepositoryTest {
         assertThat(stellar.getNameKor()).isEqualTo(nameKor);
         assertThat(stellar.getNameEng()).isEqualTo(nameEng);
         assertThat(stellar.getNameJpn()).isEqualTo(nameJpn);
+        assertThat(stellar.getGeneration()).isEqualTo(generation);
+        assertThat(stellar.getDebutOrder()).isEqualTo(debutOrder);
+        assertThat(stellar.getPersonalColor()).isEqualTo(personalColor);
     }
 }
