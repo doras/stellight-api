@@ -50,14 +50,13 @@ public class ScheduleRepositoryTest {
     @Test
     public void saveSchedule() {
         //given
-        String nameKor = "테스트 한국어";
-        String nameEng = "test english";
-        String nameJpn = "テストの日本語";
-
         Stellar stellar = stellarRepository.save(Stellar.builder()
-                .nameKor(nameKor)
-                .nameEng(nameEng)
-                .nameJpn(nameJpn)
+                .nameKor("테스트 한국어")
+                .nameEng("test english")
+                .nameJpn("テストの日本語")
+                .generation((byte)2)
+                .debutOrder((byte)1)
+                .personalColor("ffddaa")
                 .build());
 
         Boolean isFixedTime = true;
@@ -112,6 +111,9 @@ public class ScheduleRepositoryTest {
                 .nameKor("테스트 한국어")
                 .nameEng("test english")
                 .nameJpn("テストの日本語")
+                .generation((byte)2)
+                .debutOrder((byte)1)
+                .personalColor("ffddaa")
                 .build());
 
         scheduleRepository.save(Schedule.builder()

@@ -49,6 +49,9 @@ public class ScheduleTest {
                 .nameKor("스텔라")
                 .nameEng("")
                 .nameJpn("")
+                .generation((byte)2)
+                .debutOrder((byte)1)
+                .personalColor("ffddaa")
                 .build();
         entityManager.persist(stellar);
 
@@ -130,6 +133,9 @@ public class ScheduleTest {
                 .nameKor("스텔라")
                 .nameEng("")
                 .nameJpn("")
+                .generation((byte)2)
+                .debutOrder((byte)1)
+                .personalColor("ffddaa")
                 .build();
         entityManager.persist(stellar);
 

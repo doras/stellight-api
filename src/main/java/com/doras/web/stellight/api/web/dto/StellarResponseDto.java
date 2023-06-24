@@ -13,11 +13,17 @@ public class StellarResponseDto {
     private final String nameKor;
     private final String nameEng;
     private final String nameJpn;
+    private final Byte generation;
+    private final Byte debutOrder;
+    private final String personalColor;
 
     public StellarResponseDto(Stellar entity) {
         this.id = entity.getId();
         this.nameKor = entity.getNameKor();
         this.nameEng = entity.getNameEng();
         this.nameJpn = entity.getNameJpn();
+        this.generation = entity.getGeneration();
+        this.debutOrder = entity.getDebutOrder();
+        this.personalColor = entity.getPersonalColor();
     }
 }

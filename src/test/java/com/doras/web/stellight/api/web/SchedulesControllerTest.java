@@ -92,6 +92,9 @@ public class SchedulesControllerTest {
                 .nameKor("한국 이름")
                 .nameEng("english name")
                 .nameJpn("日本語の名前")
+                .generation((byte)2)
+                .debutOrder((byte)1)
+                .personalColor("ffddaa")
                 .build());
 
         //given
@@ -139,6 +142,9 @@ public class SchedulesControllerTest {
                 .nameKor("한국 이름")
                 .nameEng("english name")
                 .nameJpn("日本語の名前")
+                .generation((byte)2)
+                .debutOrder((byte)1)
+                .personalColor("ffddaa")
                 .build());
 
         Schedule savedSchedule = scheduleRepository.save(Schedule.builder()
@@ -175,6 +181,9 @@ public class SchedulesControllerTest {
                 .nameKor("한국 이름")
                 .nameEng("english name")
                 .nameJpn("日本語の名前")
+                .generation((byte)2)
+                .debutOrder((byte)1)
+                .personalColor("ffddaa")
                 .build());
 
         Schedule savedSchedule = scheduleRepository.save(Schedule.builder()
@@ -225,6 +234,9 @@ public class SchedulesControllerTest {
                 .nameKor("한국 이름")
                 .nameEng("english name")
                 .nameJpn("日本語の名前")
+                .generation((byte)2)
+                .debutOrder((byte)1)
+                .personalColor("ffddaa")
                 .build());
 
         Schedule savedSchedule = scheduleRepository.save(Schedule.builder()
@@ -261,6 +273,9 @@ public class SchedulesControllerTest {
                 .nameKor("한국 이름")
                 .nameEng("english name")
                 .nameJpn("日本語の名前")
+                .generation((byte)2)
+                .debutOrder((byte)1)
+                .personalColor("ffddaa")
                 .build());
 
         Schedule schedule = Schedule.builder()
@@ -292,6 +307,9 @@ public class SchedulesControllerTest {
                 .nameKor("한국 이름")
                 .nameEng("english name")
                 .nameJpn("日本語の名前")
+                .generation((byte)2)
+                .debutOrder((byte)1)
+                .personalColor("ffddaa")
                 .build());
 
         Schedule schedule = Schedule.builder()
@@ -327,6 +345,9 @@ public class SchedulesControllerTest {
                 .nameKor("한국 이름")
                 .nameEng("english name")
                 .nameJpn("日本語の名前")
+                .generation((byte)2)
+                .debutOrder((byte)1)
+                .personalColor("ffddaa")
                 .build());
 
         Schedule schedule = Schedule.builder()
@@ -384,6 +405,9 @@ public class SchedulesControllerTest {
                 .nameKor("한국 이름")
                 .nameEng("english name")
                 .nameJpn("日本語の名前")
+                .generation((byte)2)
+                .debutOrder((byte)1)
+                .personalColor("ffddaa")
                 .build());
 
         Schedule savedSchedule = scheduleRepository.save(Schedule.builder()
@@ -442,12 +466,18 @@ public class SchedulesControllerTest {
                 .nameKor("한국 이름")
                 .nameEng("english name")
                 .nameJpn("日本語の名前")
+                .generation((byte)2)
+                .debutOrder((byte)1)
+                .personalColor("ffddaa")
                 .build());
 
         Stellar stellar2 = stellarRepository.save(Stellar.builder()
                 .nameKor("한국 이름2")
                 .nameEng("english name2")
                 .nameJpn("日本語の名前2")
+                .generation((byte)2)
+                .debutOrder((byte)2)
+                .personalColor("ffddaa")
                 .build());
 
         Schedule savedSchedule = scheduleRepository.save(Schedule.builder()
