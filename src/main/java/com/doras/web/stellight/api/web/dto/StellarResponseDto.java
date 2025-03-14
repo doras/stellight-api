@@ -16,6 +16,7 @@ public class StellarResponseDto {
     private final Byte generation;
     private final Byte debutOrder;
     private final String personalColor;
+    private final String emoji;
 
     public StellarResponseDto(Stellar entity) {
         this.id = entity.getId();
@@ -25,5 +26,6 @@ public class StellarResponseDto {
         this.generation = entity.getGeneration();
         this.debutOrder = entity.getDebutOrder();
         this.personalColor = entity.getPersonalColor();
+        this.emoji = entity.getEmoji();
     }
 }

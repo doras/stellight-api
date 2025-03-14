@@ -57,6 +57,12 @@ public class Stellar {
     private String personalColor;
 
     /**
+     * Representative emoji
+     */
+    @Column(length = 4)
+    private String emoji;
+
+    /**
      * Relationship to {@link Schedule}, the schedules of this Stellar.
      */
     @OneToMany(mappedBy = "stellar", fetch = FetchType.LAZY)
@@ -66,12 +72,13 @@ public class Stellar {
      * Constructor of Schedule.
      */
     @Builder
-    public Stellar(String nameKor, String nameEng, String nameJpn, Byte generation, Byte debutOrder, String personalColor) {
+    public Stellar(String nameKor, String nameEng, String nameJpn, Byte generation, Byte debutOrder, String personalColor, String emoji) {
         this.nameKor = nameKor;
         this.nameEng = nameEng;
         this.nameJpn = nameJpn;
         this.generation = generation;
         this.debutOrder = debutOrder;
         this.personalColor = personalColor;
+        this.emoji = emoji;
     }
 }
