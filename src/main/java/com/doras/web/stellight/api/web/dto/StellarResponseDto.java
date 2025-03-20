@@ -17,6 +17,7 @@ public class StellarResponseDto {
     private final Byte debutOrder;
     private final String personalColor;
     private final String emoji;
+    private final Boolean isGraduated;
 
     public StellarResponseDto(Stellar entity) {
         this.id = entity.getId();
@@ -27,5 +28,6 @@ public class StellarResponseDto {
         this.debutOrder = entity.getDebutOrder();
         this.personalColor = entity.getPersonalColor();
         this.emoji = entity.getEmoji();
+        this.isGraduated = entity.getIsGraduated();
     }
 }

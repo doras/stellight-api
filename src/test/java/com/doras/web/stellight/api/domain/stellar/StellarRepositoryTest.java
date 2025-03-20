@@ -42,6 +42,7 @@ public class StellarRepositoryTest {
         Byte debutOrder = 1;
         String personalColor = "00ff66";
         String emoji = "☪️";
+        Boolean isGraduated = false;
 
         stellarRepository.save(Stellar.builder()
                 .nameKor(nameKor)
@@ -51,6 +52,7 @@ public class StellarRepositoryTest {
                 .debutOrder(debutOrder)
                 .personalColor(personalColor)
                 .emoji(emoji)
+                .isGraduated(isGraduated)
                 .build());
 
         //when
@@ -65,5 +67,6 @@ public class StellarRepositoryTest {
         assertThat(stellar.getDebutOrder()).isEqualTo(debutOrder);
         assertThat(stellar.getPersonalColor()).isEqualTo(personalColor);
         assertThat(stellar.getEmoji()).isEqualTo(emoji);
+        assertThat(stellar.getIsGraduated()).isEqualTo(isGraduated);
     }
 }

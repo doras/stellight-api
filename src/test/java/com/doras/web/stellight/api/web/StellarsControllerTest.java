@@ -111,6 +111,7 @@ public class StellarsControllerTest {
                 .debutOrder((byte)1)
                 .personalColor("ffddaa")
                 .emoji("☪️")
+                .isGraduated(true)
                 .build());
 
         Stellar stellar2 = stellarRepository.save(Stellar.builder()
@@ -121,6 +122,7 @@ public class StellarsControllerTest {
                 .debutOrder((byte)2)
                 .personalColor("ffddaa")
                 .emoji("⛩️")
+                .isGraduated(false)
                 .build());
 
         String url = "http://localhost:" + port + "/api/v1/stellars";
@@ -140,6 +142,7 @@ public class StellarsControllerTest {
                 .andExpect(jsonPath("$[0].debutOrder", is((int)stellar.getDebutOrder())))
                 .andExpect(jsonPath("$[0].personalColor", is(stellar.getPersonalColor())))
                 .andExpect(jsonPath("$[0].emoji", is(stellar.getEmoji())))
+                .andExpect(jsonPath("$[0].isGraduated", is(stellar.getIsGraduated())))
                 // second element check
                 .andExpect(jsonPath("$[1].id", is(stellar2.getId()), Long.class))
                 .andExpect(jsonPath("$[1].nameKor", is(stellar2.getNameKor())))
@@ -148,6 +151,7 @@ public class StellarsControllerTest {
                 .andExpect(jsonPath("$[1].generation", is((int)stellar2.getGeneration())))
                 .andExpect(jsonPath("$[1].debutOrder", is((int)stellar2.getDebutOrder())))
                 .andExpect(jsonPath("$[1].personalColor", is(stellar2.getPersonalColor())))
-                .andExpect(jsonPath("$[1].emoji", is(stellar2.getEmoji())));
+                .andExpect(jsonPath("$[1].emoji", is(stellar2.getEmoji())))
+                .andExpect(jsonPath("$[1].isGraduated", is(stellar2.getIsGraduated())));
     }
 }
