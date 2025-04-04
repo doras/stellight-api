@@ -4,6 +4,7 @@ import com.doras.web.stellight.api.domain.schedule.Schedule;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.ColumnDefault;
 
 import javax.persistence.*;
 import java.util.Collection;
@@ -57,6 +58,16 @@ public class Stellar {
     private String personalColor;
 
     /**
+     * Representative emoji
+     */
+    @Column(length = 4)
+    private String emoji;
+
+    @Column(nullable = false)
+    @ColumnDefault("false")
+    private Boolean isGraduated;
+
+    /**
      * Relationship to {@link Schedule}, the schedules of this Stellar.
      */
     @OneToMany(mappedBy = "stellar", fetch = FetchType.LAZY)
@@ -66,12 +77,14 @@ public class Stellar {
      * Constructor of Schedule.
      */
     @Builder
-    public Stellar(String nameKor, String nameEng, String nameJpn, Byte generation, Byte debutOrder, String personalColor) {
+    public Stellar(String nameKor, String nameEng, String nameJpn, Byte generation, Byte debutOrder, String personalColor, String emoji, Boolean isGraduated) {
         this.nameKor = nameKor;
         this.nameEng = nameEng;
         this.nameJpn = nameJpn;
         this.generation = generation;
         this.debutOrder = debutOrder;
         this.personalColor = personalColor;
+        this.emoji = emoji;
+        this.isGraduated = isGraduated == null ? false : isGraduated;
     }
 }
