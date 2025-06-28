@@ -8,9 +8,10 @@ import com.doras.web.stellight.api.web.dto.ScheduleUpdateRequestDto;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 /**
  * REST controller about schedules.
@@ -70,13 +71,18 @@ public class SchedulesController {
     }
 
     /**
-     * Find all schedules with given filters in {@code requestDto}.
-     * @param requestDto DTO that has filters
-     * @return List of found entities with {@link ScheduleResponseDto} classes.
+     * Find all schedules with pagination and filters provided in {@code requestDto}.
+     * @param pageable pagination information including page number, size, and sorting
+     * @param requestDto DTO containing filter criteria for schedules
+     * @return Page of schedules wrapped in {@link ScheduleResponseDto}.
      */
     @GetMapping
-    public List<ScheduleResponseDto> findAll(ScheduleFindAllRequestDto requestDto) {
+    public Page<ScheduleResponseDto> findAll(
+            @PageableDefault(page = 0, size = 10)
+            Pageable pageable,
+            ScheduleFindAllRequestDto requestDto
+    ) {
         logger.info("find all schedules");
-        return scheduleService.findAllSchedules(requestDto);
+        return scheduleService.findAllSchedules(requestDto, pageable);
     }
 }
