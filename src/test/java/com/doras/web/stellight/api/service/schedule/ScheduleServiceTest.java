@@ -16,6 +16,9 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallbackWithoutResult;
@@ -363,14 +366,16 @@ public class ScheduleServiceTest {
                 .build());
 
         ScheduleFindAllRequestDto requestDto = ScheduleFindAllRequestDto.builder().build();
+        Pageable pageable = PageRequest.of(0, 10);
 
         // when
-        List<ScheduleResponseDto> result = scheduleService.findAllSchedules(requestDto);
+        Page<ScheduleResponseDto> result = scheduleService.findAllSchedules(requestDto, pageable);
 
         // then
         List<ScheduleResponseDto> expectedResult =
                 Stream.of(savedSchedule, savedSchedule2).map(ScheduleResponseDto::new).collect(Collectors.toList());
-        assertThat(result)
+
+        assertThat(result.getContent())
                 .hasSize(expectedResult.size())
                 .containsExactlyElementsOf(expectedResult);
     }
@@ -435,13 +440,14 @@ public class ScheduleServiceTest {
                 .startDateTimeAfter(LocalDateTime.of(2023, 2, 15, 19, 0))
                 .startDateTimeBefore(LocalDateTime.of(2023, 2, 21, 19, 0))
                 .build();
+        Pageable pageable = PageRequest.of(0, 10);
 
         // when
-        List<ScheduleResponseDto> noMatchStellarIdResult = scheduleService.findAllSchedules(noMatchStellarIdRequestDto);
-        List<ScheduleResponseDto> allStellarIdResult = scheduleService.findAllSchedules(allStellarIdRequestDto);
-        List<ScheduleResponseDto> afterResult = scheduleService.findAllSchedules(afterRequestDto);
-        List<ScheduleResponseDto> beforeResult = scheduleService.findAllSchedules(beforeRequestDto);
-        List<ScheduleResponseDto> afterAndBeforeResult = scheduleService.findAllSchedules(afterAndBeforeRequestDto);
+        List<ScheduleResponseDto> noMatchStellarIdResult = scheduleService.findAllSchedules(noMatchStellarIdRequestDto, pageable).getContent();
+        List<ScheduleResponseDto> allStellarIdResult = scheduleService.findAllSchedules(allStellarIdRequestDto, pageable).getContent();
+        List<ScheduleResponseDto> afterResult = scheduleService.findAllSchedules(afterRequestDto, pageable).getContent();
+        List<ScheduleResponseDto> beforeResult = scheduleService.findAllSchedules(beforeRequestDto, pageable).getContent();
+        List<ScheduleResponseDto> afterAndBeforeResult = scheduleService.findAllSchedules(afterAndBeforeRequestDto, pageable).getContent();
 
         // then
         assertThat(noMatchStellarIdResult).hasSize(0);
