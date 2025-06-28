@@ -330,7 +330,7 @@ public class SchedulesControllerTest {
                 // status check
                 .andExpect(status().isOk())
                 // list length check
-                .andExpect(jsonPath("$.length()").value(0));
+                .andExpect(jsonPath("$.totalElements").value(0));
     }
 
     /**
@@ -391,7 +391,7 @@ public class SchedulesControllerTest {
         //when, then
         mvc.perform(get(url))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.length()").value(0));
+                .andExpect(jsonPath("$.totalElements").value(0));
     }
 
     /**
@@ -432,27 +432,27 @@ public class SchedulesControllerTest {
                 // status check
                 .andExpect(status().isOk())
                 // list length check
-                .andExpect(jsonPath("$.length()").value(2))
+                .andExpect(jsonPath("$.totalElements").value(2))
                 // first element check
-                .andExpect(jsonPath("$[0].id", is(savedSchedule.getId()), Long.class))
-                .andExpect(jsonPath("$[0].stellarId", is(savedSchedule.getStellar().getId()), Long.class))
-                .andExpect(jsonPath("$[0].stellarNameKor", is(savedSchedule.getStellar().getNameKor())))
-                .andExpect(jsonPath("$[0].isFixedTime", is(savedSchedule.getIsFixedTime())))
-                .andExpect(jsonPath("$[0].startDateTime", is(
+                .andExpect(jsonPath("$.content[0].id", is(savedSchedule.getId()), Long.class))
+                .andExpect(jsonPath("$.content[0].stellarId", is(savedSchedule.getStellar().getId()), Long.class))
+                .andExpect(jsonPath("$.content[0].stellarNameKor", is(savedSchedule.getStellar().getNameKor())))
+                .andExpect(jsonPath("$.content[0].isFixedTime", is(savedSchedule.getIsFixedTime())))
+                .andExpect(jsonPath("$.content[0].startDateTime", is(
                         savedSchedule.getStartDateTime()
                                 .format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss")))))
-                .andExpect(jsonPath("$[0].title", is(savedSchedule.getTitle())))
-                .andExpect(jsonPath("$[0].remark", is(savedSchedule.getRemark())))
+                .andExpect(jsonPath("$.content[0].title", is(savedSchedule.getTitle())))
+                .andExpect(jsonPath("$.content[0].remark", is(savedSchedule.getRemark())))
                 // second element check
-                .andExpect(jsonPath("$[1].id", is(savedSchedule2.getId()), Long.class))
-                .andExpect(jsonPath("$[1].stellarId", is(savedSchedule2.getStellar().getId()), Long.class))
-                .andExpect(jsonPath("$[1].stellarNameKor", is(savedSchedule2.getStellar().getNameKor())))
-                .andExpect(jsonPath("$[1].isFixedTime", is(savedSchedule2.getIsFixedTime())))
-                .andExpect(jsonPath("$[1].startDateTime", is(
+                .andExpect(jsonPath("$.content[1].id", is(savedSchedule2.getId()), Long.class))
+                .andExpect(jsonPath("$.content[1].stellarId", is(savedSchedule2.getStellar().getId()), Long.class))
+                .andExpect(jsonPath("$.content[1].stellarNameKor", is(savedSchedule2.getStellar().getNameKor())))
+                .andExpect(jsonPath("$.content[1].isFixedTime", is(savedSchedule2.getIsFixedTime())))
+                .andExpect(jsonPath("$.content[1].startDateTime", is(
                         savedSchedule2.getStartDateTime()
                                 .format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss")))))
-                .andExpect(jsonPath("$[1].title", is(savedSchedule2.getTitle())))
-                .andExpect(jsonPath("$[1].remark", is(savedSchedule2.getRemark())));
+                .andExpect(jsonPath("$.content[1].title", is(savedSchedule2.getTitle())))
+                .andExpect(jsonPath("$.content[1].remark", is(savedSchedule2.getRemark())));
     }
 
     /**
@@ -503,8 +503,8 @@ public class SchedulesControllerTest {
         mvc.perform(get(url)
                         .param("stellarId", String.valueOf(stellar.getId())))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.length()").value(1))
-                .andExpect(jsonPath("$[0].id", is(savedSchedule.getId()), Long.class));
+                .andExpect(jsonPath("$.totalElements").value(1))
+                .andExpect(jsonPath("$.content[0].id", is(savedSchedule.getId()), Long.class));
 
         // stellarIds
         String stellarIds = Stream.of(stellar.getId(), stellar2.getId())
@@ -512,23 +512,23 @@ public class SchedulesControllerTest {
         mvc.perform(get(url)
                         .param("stellarId", stellarIds))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.length()").value(2))
-                .andExpect(jsonPath("$[0].id", is(savedSchedule.getId()), Long.class))
-                .andExpect(jsonPath("$[1].id", is(savedSchedule2.getId()), Long.class));
+                .andExpect(jsonPath("$.totalElements").value(2))
+                .andExpect(jsonPath("$.content[0].id", is(savedSchedule.getId()), Long.class))
+                .andExpect(jsonPath("$.content[1].id", is(savedSchedule2.getId()), Long.class));
 
         // date after
         mvc.perform(get(url)
                         .param("startDateTimeAfter", "2023-02-15T00:00:00"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.length()").value(1))
-                .andExpect(jsonPath("$[0].id", is(savedSchedule2.getId()), Long.class));
+                .andExpect(jsonPath("$.totalElements").value(1))
+                .andExpect(jsonPath("$.content[0].id", is(savedSchedule2.getId()), Long.class));
 
         // date before
         mvc.perform(get(url)
                         .param("startDateTimeBefore", "2023-02-15T00:00:00"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.length()").value(1))
-                .andExpect(jsonPath("$[0].id", is(savedSchedule.getId()), Long.class));
+                .andExpect(jsonPath("$.totalElements").value(1))
+                .andExpect(jsonPath("$.content[0].id", is(savedSchedule.getId()), Long.class));
 
         // all filters
         mvc.perform(get(url)
@@ -536,7 +536,7 @@ public class SchedulesControllerTest {
                         .param("startDateTimeAfter", "2023-02-14T00:00:00")
                         .param("startDateTimeBefore", "2023-02-15T00:00:00"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.length()").value(1))
-                .andExpect(jsonPath("$[0].id", is(savedSchedule.getId()), Long.class));
+                .andExpect(jsonPath("$.totalElements").value(1))
+                .andExpect(jsonPath("$.content[0].id", is(savedSchedule.getId()), Long.class));
     }
 }
