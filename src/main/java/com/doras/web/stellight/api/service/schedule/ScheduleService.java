@@ -11,8 +11,12 @@ import com.doras.web.stellight.api.web.dto.ScheduleFindAllRequestDto;
 import com.doras.web.stellight.api.web.dto.ScheduleResponseDto;
 import com.doras.web.stellight.api.web.dto.ScheduleSaveRequestDto;
 import com.doras.web.stellight.api.web.dto.ScheduleUpdateRequestDto;
+import com.querydsl.core.BooleanBuilder;
 import com.querydsl.jpa.impl.JPAQuery;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -111,23 +115,41 @@ public class ScheduleService {
      * @return List of found entities with {@link ScheduleResponseDto} classes.
      */
     @Transactional(readOnly = true)
-    public List<ScheduleResponseDto> findAllSchedules(ScheduleFindAllRequestDto requestDto) {
+    public Page<ScheduleResponseDto> findAllSchedules(ScheduleFindAllRequestDto requestDto, Pageable pageable) {
         QSchedule schedule = QSchedule.schedule;
 
-        var query = new JPAQuery<>(entityManager)
-                .from(schedule)
-                .where(schedule.isDeleted.eq(false));
+        BooleanBuilder condition = new BooleanBuilder();
+        condition.and(schedule.isDeleted.eq(false));
 
         if (requestDto.getStellarId() != null) {
-            query.where(schedule.stellar.id.in(requestDto.getStellarId()));
+            condition.and(schedule.stellar.id.in(requestDto.getStellarId()));
         }
         if (requestDto.getStartDateTimeAfter() != null || requestDto.getStartDateTimeBefore() != null) {
-            query.where(
+            condition.and(
                     schedule.startDateTime.between(
                             requestDto.getStartDateTimeAfter(), requestDto.getStartDateTimeBefore()));
         }
 
-        return query.orderBy(schedule.id.asc()).fetch()
-                .stream().map(obj -> (Schedule) obj).map(ScheduleResponseDto::new).collect(Collectors.toList());
+        List<Schedule> contents = new JPAQuery<>(entityManager)
+                .select(schedule)
+                .from(schedule)
+                .where(condition)
+                .orderBy(schedule.id.asc())
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
+                .fetch();
+
+        // Count Query
+        Long total = new JPAQuery<>(entityManager)
+                .select(schedule.count())
+                .from(schedule)
+                .where(condition)
+                .fetchOne();
+
+        List<ScheduleResponseDto> dtoList = contents.stream()
+                .map(ScheduleResponseDto::new)
+                .collect(Collectors.toList());
+
+        return new PageImpl<>(dtoList, pageable, total == null ? 0 : total);
     }
 }
