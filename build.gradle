@@ -73,7 +73,7 @@ tasks.named("jar") {
 // Passed as a system property so that it is kept even when `--args` is given.
 def localConfigDir = "${System.getProperty('user.home').replace('\\', '/')}/.stellight"
 bootRun {
-    systemProperty 'spring.config.additional-location', "optional:file:${localConfigDir}/"
+    systemProperty 'spring.config.additional-location', "file:${localConfigDir}/"
     doFirst {
         if (!file("${localConfigDir}/application-oauth.properties").exists()) {
             throw new GradleException(
