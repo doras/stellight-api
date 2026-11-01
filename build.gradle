@@ -68,3 +68,9 @@ configurations {
 tasks.named("jar") {
     enabled = false
 }
+
+// Load real OAuth2 credentials (application-oauth.properties) from outside the repository for local runs.
+def localConfigDir = new File(System.getProperty('user.home'), '.stellight').toURI().toString()
+bootRun {
+    args = ["--spring.config.additional-location=optional:${localConfigDir.endsWith('/') ? localConfigDir : localConfigDir + '/'}"]
+}
