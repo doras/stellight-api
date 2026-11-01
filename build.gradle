@@ -70,7 +70,15 @@ tasks.named("jar") {
 }
 
 // Load real OAuth2 credentials (application-oauth.properties) from outside the repository for local runs.
-def localConfigDir = new File(System.getProperty('user.home'), '.stellight').toURI().toString()
+// Passed as a system property so that it is kept even when `--args` is given.
+def localConfigDir = "${System.getProperty('user.home').replace('\\', '/')}/.stellight"
 bootRun {
-    args = ["--spring.config.additional-location=optional:${localConfigDir.endsWith('/') ? localConfigDir : localConfigDir + '/'}"]
+    systemProperty 'spring.config.additional-location', "optional:file:${localConfigDir}/"
+    doFirst {
+        if (!file("${localConfigDir}/application-oauth.properties").exists()) {
+            throw new GradleException(
+                    "OAuth2 credentials not found: ${localConfigDir}/application-oauth.properties\n" +
+                    "Create it with the Naver OAuth2 client registration before running bootRun.")
+        }
+    }
 }
