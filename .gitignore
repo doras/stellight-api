@@ -44,3 +44,5 @@ bin/
 .DS_Store
 
 application-oauth.properties
+# dummy credentials for tests only (real ones must never be placed here)
+!src/test/resources/application-oauth.properties
