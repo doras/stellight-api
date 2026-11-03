@@ -32,7 +32,9 @@ public class BanRepositoryTest {
      */
     @AfterEach
     public void cleanup() {
-        banRepository.deleteAll();
+        // Bulk delete without loading entities: Hibernate 6 fails to flush the loaded Users
+        // whose inverse `ban` still references the removed Ban.
+        banRepository.deleteAllInBatch();
         usersRepository.deleteAll();
     }
 

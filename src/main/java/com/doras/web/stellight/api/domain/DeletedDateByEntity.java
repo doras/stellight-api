@@ -2,7 +2,7 @@ package com.doras.web.stellight.api.domain;
 
 import lombok.Getter;
 
-import javax.persistence.MappedSuperclass;
+import jakarta.persistence.MappedSuperclass;
 
 /**
  * Deleted Date and ByUser super entity class.
