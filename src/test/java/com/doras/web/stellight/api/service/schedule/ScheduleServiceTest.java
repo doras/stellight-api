@@ -236,7 +236,6 @@ public class ScheduleServiceTest {
         // Because of lazy fetch about ScheduleHistory, must use additional transaction code.
         transactionTemplate.executeWithoutResult(status -> {
             // schedule check
-            // schedule check
             Schedule modifiedSchedule = scheduleRepository.findAll().get(0);
             assertThat(modifiedSchedule.getIsFixedTime()).isEqualTo(expectedIsFixedTime);
             assertThat(modifiedSchedule.getStartDateTime()).isEqualTo(expectedStartDateTime);
