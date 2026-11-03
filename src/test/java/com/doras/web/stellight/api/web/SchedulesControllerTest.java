@@ -7,8 +7,6 @@ import com.doras.web.stellight.api.domain.stellar.Stellar;
 import com.doras.web.stellight.api.domain.stellar.StellarRepository;
 import com.doras.web.stellight.api.web.dto.ScheduleSaveRequestDto;
 import com.doras.web.stellight.api.web.dto.ScheduleUpdateRequestDto;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -22,6 +20,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -47,6 +46,9 @@ public class SchedulesControllerTest {
 
     @Autowired
     private WebApplicationContext context;
+
+    @Autowired
+    private JsonMapper jsonMapper;
 
     private MockMvc mvc;
 
@@ -118,8 +120,7 @@ public class SchedulesControllerTest {
         //when
         mvc.perform(post(url)
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(new ObjectMapper().registerModule(new JavaTimeModule())
-                        .writeValueAsString(requestDto)))
+                .content(jsonMapper.writeValueAsString(requestDto)))
                 .andExpect(status().isOk());
 
         //then
@@ -211,7 +212,7 @@ public class SchedulesControllerTest {
         //when
         mvc.perform(put(url)
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(new ObjectMapper().registerModule(new JavaTimeModule()).writeValueAsString(requestDto)))
+                .content(jsonMapper.writeValueAsString(requestDto)))
                 .andExpect(status().isOk());
 
         //then
@@ -369,8 +370,7 @@ public class SchedulesControllerTest {
                 .remark("수정된 스케줄에 대한 비고")
                 .build();
 
-        ObjectMapper mapper = new ObjectMapper().registerModule(new JavaTimeModule());
-        String updatedScheduleJson = mapper.writeValueAsString(requestDto);
+        String updatedScheduleJson = jsonMapper.writeValueAsString(requestDto);
 
         //when, then
         mvc.perform(put(url)

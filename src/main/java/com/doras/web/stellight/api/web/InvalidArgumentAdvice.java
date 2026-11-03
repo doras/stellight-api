@@ -21,7 +21,7 @@ public class InvalidArgumentAdvice {
      */
     @ResponseBody
     @ExceptionHandler(InvalidArgumentException.class)
-    @ResponseStatus(HttpStatus.UNPROCESSABLE_ENTITY)
+    @ResponseStatus(HttpStatus.UNPROCESSABLE_CONTENT)
     public String invalidArgumentHandler(InvalidArgumentException ex) {
         return ex.getMessage();
     }

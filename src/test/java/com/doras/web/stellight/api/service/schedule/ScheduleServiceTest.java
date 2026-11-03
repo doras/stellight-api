@@ -20,8 +20,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-import org.springframework.transaction.TransactionStatus;
-import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import java.time.LocalDateTime;
@@ -98,26 +96,23 @@ public class ScheduleServiceTest {
 
         // then
         // Because of lazy fetch about ScheduleHistory, must use additional transaction code.
-        transactionTemplate.execute(new TransactionCallbackWithoutResult() {
-            @Override
-            protected void doInTransactionWithoutResult(TransactionStatus status) {
-                // schedule check
-                Schedule savedSchedule = scheduleRepository.findAll().get(0);
-                assertThat(savedSchedule.getId()).isEqualTo(scheduleId);
-                assertThat(savedSchedule.getStellar().getId()).isEqualTo(stellarId);
-                assertThat(savedSchedule.getIsFixedTime()).isEqualTo(isFixedTime);
-                assertThat(savedSchedule.getStartDateTime()).isEqualTo(startDateTime);
-                assertThat(savedSchedule.getTitle()).isEqualTo(title);
-                assertThat(savedSchedule.getRemark()).isEqualTo(remark);
+        transactionTemplate.executeWithoutResult(status -> {
+            // schedule check
+            Schedule savedSchedule = scheduleRepository.findAll().get(0);
+            assertThat(savedSchedule.getId()).isEqualTo(scheduleId);
+            assertThat(savedSchedule.getStellar().getId()).isEqualTo(stellarId);
+            assertThat(savedSchedule.getIsFixedTime()).isEqualTo(isFixedTime);
+            assertThat(savedSchedule.getStartDateTime()).isEqualTo(startDateTime);
+            assertThat(savedSchedule.getTitle()).isEqualTo(title);
+            assertThat(savedSchedule.getRemark()).isEqualTo(remark);
 
-                // schedule history check
-                ScheduleHistory savedScheduleHistory = savedSchedule.getScheduleHistories().iterator().next();
-                assertThat(savedScheduleHistory.getSchedule().getId()).isEqualTo(savedSchedule.getId());
-                assertThat(savedScheduleHistory.getIsFixedTime()).isEqualTo(isFixedTime);
-                assertThat(savedScheduleHistory.getStartDateTime()).isEqualTo(startDateTime);
-                assertThat(savedScheduleHistory.getTitle()).isEqualTo(title);
-                assertThat(savedScheduleHistory.getRemark()).isEqualTo(remark);
-            }
+            // schedule history check
+            ScheduleHistory savedScheduleHistory = savedSchedule.getScheduleHistories().iterator().next();
+            assertThat(savedScheduleHistory.getSchedule().getId()).isEqualTo(savedSchedule.getId());
+            assertThat(savedScheduleHistory.getIsFixedTime()).isEqualTo(isFixedTime);
+            assertThat(savedScheduleHistory.getStartDateTime()).isEqualTo(startDateTime);
+            assertThat(savedScheduleHistory.getTitle()).isEqualTo(title);
+            assertThat(savedScheduleHistory.getRemark()).isEqualTo(remark);
         });
     }
 
@@ -239,28 +234,25 @@ public class ScheduleServiceTest {
         assertThat(resultId).isEqualTo(scheduleId);
 
         // Because of lazy fetch about ScheduleHistory, must use additional transaction code.
-        transactionTemplate.execute(new TransactionCallbackWithoutResult() {
-            @Override
-            protected void doInTransactionWithoutResult(TransactionStatus status) {
-                // schedule check
-                // schedule check
-                Schedule modifiedSchedule = scheduleRepository.findAll().get(0);
-                assertThat(modifiedSchedule.getIsFixedTime()).isEqualTo(expectedIsFixedTime);
-                assertThat(modifiedSchedule.getStartDateTime()).isEqualTo(expectedStartDateTime);
-                assertThat(modifiedSchedule.getTitle()).isEqualTo(expectedTitle);
-                assertThat(modifiedSchedule.getRemark()).isEqualTo(expectedRemark);
+        transactionTemplate.executeWithoutResult(status -> {
+            // schedule check
+            // schedule check
+            Schedule modifiedSchedule = scheduleRepository.findAll().get(0);
+            assertThat(modifiedSchedule.getIsFixedTime()).isEqualTo(expectedIsFixedTime);
+            assertThat(modifiedSchedule.getStartDateTime()).isEqualTo(expectedStartDateTime);
+            assertThat(modifiedSchedule.getTitle()).isEqualTo(expectedTitle);
+            assertThat(modifiedSchedule.getRemark()).isEqualTo(expectedRemark);
 
-                // histories check
-                Collection<ScheduleHistory> scheduleHistories = modifiedSchedule.getScheduleHistories();
-                assertThat(scheduleHistories.size()).isEqualTo(2);
-                ScheduleHistory savedScheduleHistory = scheduleHistories.stream()
-                        .max(Comparator.comparing(ScheduleHistory::getId)).orElseThrow();
-                assertThat(savedScheduleHistory.getSchedule().getId()).isEqualTo(savedSchedule.getId());
-                assertThat(savedScheduleHistory.getIsFixedTime()).isEqualTo(expectedIsFixedTime);
-                assertThat(savedScheduleHistory.getStartDateTime()).isEqualTo(expectedStartDateTime);
-                assertThat(savedScheduleHistory.getTitle()).isEqualTo(expectedTitle);
-                assertThat(savedScheduleHistory.getRemark()).isEqualTo(expectedRemark);
-            }
+            // histories check
+            Collection<ScheduleHistory> scheduleHistories = modifiedSchedule.getScheduleHistories();
+            assertThat(scheduleHistories.size()).isEqualTo(2);
+            ScheduleHistory savedScheduleHistory = scheduleHistories.stream()
+                    .max(Comparator.comparing(ScheduleHistory::getId)).orElseThrow();
+            assertThat(savedScheduleHistory.getSchedule().getId()).isEqualTo(savedSchedule.getId());
+            assertThat(savedScheduleHistory.getIsFixedTime()).isEqualTo(expectedIsFixedTime);
+            assertThat(savedScheduleHistory.getStartDateTime()).isEqualTo(expectedStartDateTime);
+            assertThat(savedScheduleHistory.getTitle()).isEqualTo(expectedTitle);
+            assertThat(savedScheduleHistory.getRemark()).isEqualTo(expectedRemark);
         });
     }
 
