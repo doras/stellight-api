@@ -3,7 +3,6 @@ package com.doras.web.stellight.api.web;
 import com.doras.web.stellight.api.config.auth.dto.SessionUser;
 import com.doras.web.stellight.api.domain.user.*;
 import com.doras.web.stellight.api.web.dto.BanSaveRequestDto;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -19,6 +18,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
@@ -48,6 +48,9 @@ public class UsersControllerTest {
 
     @Autowired
     private WebApplicationContext context;
+
+    @Autowired
+    private JsonMapper jsonMapper;
 
     private MockMvc mvc;
 
@@ -134,7 +137,7 @@ public class UsersControllerTest {
         //when
         mvc.perform(post(url)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(new ObjectMapper().writeValueAsString(requestDto)))
+                        .content(jsonMapper.writeValueAsString(requestDto)))
                 .andExpect(status().isOk());
 
         //then
@@ -167,7 +170,7 @@ public class UsersControllerTest {
         //when, then
         mvc.perform(post(url)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(new ObjectMapper().writeValueAsString(requestDto)))
+                        .content(jsonMapper.writeValueAsString(requestDto)))
                 .andExpect(status().isForbidden());
     }
 }

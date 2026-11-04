@@ -1,0 +1,4 @@
+# Keep the Gradle wrapper scripts runnable regardless of the local core.autocrlf setting:
+# the server runs `gradlew` on Linux, and cmd.exe needs CRLF in batch files.
+gradlew text eol=lf
+*.bat   text eol=crlf
