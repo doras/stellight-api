@@ -3,6 +3,7 @@ package com.doras.web.stellight.api.config.auth;
 import com.doras.web.stellight.api.domain.user.Role;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -14,14 +15,16 @@ import org.springframework.security.core.session.SessionRegistryImpl;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.DispatcherType;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 /**
  * Spring Security Configuration class
  */
 @RequiredArgsConstructor
+@Configuration
 @EnableWebSecurity
 public class SecurityConfig {
     private final CustomOauth2UserService customOauth2UserService;
@@ -39,15 +42,18 @@ public class SecurityConfig {
                 .frameOptions(HeadersConfigurer.FrameOptionsConfig::disable)
             )
             .authorizeHttpRequests(authorize -> authorize
-                .mvcMatchers("/", "/favicon.ico", "/assets/**", "/statics/**").permitAll() // allow for static resources
-                .mvcMatchers("/api/profile").permitAll() // allow for profile api
-                .antMatchers("/h2-console/**").permitAll() // allow for h2 console
-                .mvcMatchers("/api/v1/users/me").authenticated() // only authenticated user for /user/me API
-                .mvcMatchers("/api/v1/users/**").hasRole(Role.ADMIN.name()) // only ADMIN can access to user API
-                .mvcMatchers(HttpMethod.GET, "/api/v1/**").permitAll() // permit all for GET API
-                .mvcMatchers(HttpMethod.POST, "/api/v1/**").hasRole(Role.USER.name()) // only USER can access to POST API
-                .mvcMatchers(HttpMethod.PUT, "/api/v1/**").hasRole(Role.USER.name()) // only USER can access to PUT API
-                .mvcMatchers(HttpMethod.DELETE, "/api/v1/**").hasRole(Role.USER.name()) // only USER can access to DELETE API
+                // Since Spring Security 6, authorization also applies to FORWARD (e.g. "/" -> index.html)
+                // and ERROR (/error) dispatches. Their original requests have already been authorized.
+                .dispatcherTypeMatchers(DispatcherType.FORWARD, DispatcherType.ERROR).permitAll()
+                .requestMatchers("/", "/favicon.ico", "/assets/**", "/statics/**").permitAll() // allow for static resources
+                .requestMatchers("/api/profile").permitAll() // allow for profile api
+                .requestMatchers("/h2-console/**").permitAll() // allow for h2 console
+                .requestMatchers("/api/v1/users/me").authenticated() // only authenticated user for /user/me API
+                .requestMatchers("/api/v1/users/**").hasRole(Role.ADMIN.name()) // only ADMIN can access to user API
+                .requestMatchers(HttpMethod.GET, "/api/v1/**").permitAll() // permit all for GET API
+                .requestMatchers(HttpMethod.POST, "/api/v1/**").hasRole(Role.USER.name()) // only USER can access to POST API
+                .requestMatchers(HttpMethod.PUT, "/api/v1/**").hasRole(Role.USER.name()) // only USER can access to PUT API
+                .requestMatchers(HttpMethod.DELETE, "/api/v1/**").hasRole(Role.USER.name()) // only USER can access to DELETE API
                 .anyRequest().denyAll()
             )
             .exceptionHandling(exceptionHandling -> exceptionHandling
