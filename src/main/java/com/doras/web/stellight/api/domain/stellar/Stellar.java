@@ -31,6 +31,11 @@ public class Stellar {
     private String nameKor;
 
     /**
+     * Short Korean name for compact labels (up to 4 characters recommended, not enforced)
+     */
+    private String nameKorShort;
+
+    /**
      * English name
      */
     private String nameEng;
@@ -77,8 +82,9 @@ public class Stellar {
      * Constructor of Schedule.
      */
     @Builder
-    public Stellar(String nameKor, String nameEng, String nameJpn, Byte generation, Byte debutOrder, String personalColor, String emoji, Boolean isGraduated) {
+    public Stellar(String nameKor, String nameKorShort, String nameEng, String nameJpn, Byte generation, Byte debutOrder, String personalColor, String emoji, Boolean isGraduated) {
         this.nameKor = nameKor;
+        this.nameKorShort = nameKorShort;
         this.nameEng = nameEng;
         this.nameJpn = nameJpn;
         this.generation = generation;

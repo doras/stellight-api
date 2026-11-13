@@ -15,6 +15,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.nullValue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -63,6 +64,7 @@ public class StellarsControllerTest {
     public void getStellar() throws Exception {
         //given
         String nameKor = "한국 이름";
+        String nameKorShort = "이름";
         String nameEng = "english name";
         String nameJpn = "日本語の名前";
         Byte generation = 2;
@@ -72,6 +74,7 @@ public class StellarsControllerTest {
 
         Stellar savedStellar = stellarRepository.save(Stellar.builder()
                 .nameKor(nameKor)
+                .nameKorShort(nameKorShort)
                 .nameEng(nameEng)
                 .nameJpn(nameJpn)
                 .generation(generation)
@@ -87,6 +90,7 @@ public class StellarsControllerTest {
         mvc.perform(get(url))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.nameKor", is(nameKor)))
+                .andExpect(jsonPath("$.nameKorShort", is(nameKorShort)))
                 .andExpect(jsonPath("$.nameEng", is(nameEng)))
                 .andExpect(jsonPath("$.nameJpn", is(nameJpn)))
                 .andExpect(jsonPath("$.generation", is((int)generation)))
@@ -105,6 +109,7 @@ public class StellarsControllerTest {
         //given
         Stellar stellar = stellarRepository.save(Stellar.builder()
                 .nameKor("한국 이름")
+                .nameKorShort("이름")
                 .nameEng("english name")
                 .nameJpn("日本語の名前")
                 .generation((byte)2)
@@ -136,6 +141,7 @@ public class StellarsControllerTest {
                 // first element check
                 .andExpect(jsonPath("$[0].id", is(stellar.getId()), Long.class))
                 .andExpect(jsonPath("$[0].nameKor", is(stellar.getNameKor())))
+                .andExpect(jsonPath("$[0].nameKorShort", is(stellar.getNameKorShort())))
                 .andExpect(jsonPath("$[0].nameEng", is(stellar.getNameEng())))
                 .andExpect(jsonPath("$[0].nameJpn", is(stellar.getNameJpn())))
                 .andExpect(jsonPath("$[0].generation", is((int)stellar.getGeneration())))
@@ -146,6 +152,8 @@ public class StellarsControllerTest {
                 // second element check
                 .andExpect(jsonPath("$[1].id", is(stellar2.getId()), Long.class))
                 .andExpect(jsonPath("$[1].nameKor", is(stellar2.getNameKor())))
+                // nameKorShort is not set, so it must be null
+                .andExpect(jsonPath("$[1].nameKorShort", nullValue()))
                 .andExpect(jsonPath("$[1].nameEng", is(stellar2.getNameEng())))
                 .andExpect(jsonPath("$[1].nameJpn", is(stellar2.getNameJpn())))
                 .andExpect(jsonPath("$[1].generation", is((int)stellar2.getGeneration())))

@@ -36,6 +36,7 @@ public class StellarRepositoryTest {
     public void loadStellarsSave() {
         //given
         String nameKor = "테스트 한국어";
+        String nameKorShort = "테스트";
         String nameEng = "test english";
         String nameJpn = "テストの日本語";
         Byte generation = 2;
@@ -46,6 +47,7 @@ public class StellarRepositoryTest {
 
         stellarRepository.save(Stellar.builder()
                 .nameKor(nameKor)
+                .nameKorShort(nameKorShort)
                 .nameEng(nameEng)
                 .nameJpn(nameJpn)
                 .generation(generation)
@@ -61,6 +63,7 @@ public class StellarRepositoryTest {
         //then
         Stellar stellar = stellarList.get(0);
         assertThat(stellar.getNameKor()).isEqualTo(nameKor);
+        assertThat(stellar.getNameKorShort()).isEqualTo(nameKorShort);
         assertThat(stellar.getNameEng()).isEqualTo(nameEng);
         assertThat(stellar.getNameJpn()).isEqualTo(nameJpn);
         assertThat(stellar.getGeneration()).isEqualTo(generation);
