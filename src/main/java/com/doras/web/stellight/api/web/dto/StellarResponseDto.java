@@ -11,6 +11,7 @@ public class StellarResponseDto {
 
     private final Long id;
     private final String nameKor;
+    private final String nameKorShort;
     private final String nameEng;
     private final String nameJpn;
     private final Byte generation;
@@ -22,6 +23,7 @@ public class StellarResponseDto {
     public StellarResponseDto(Stellar entity) {
         this.id = entity.getId();
         this.nameKor = entity.getNameKor();
+        this.nameKorShort = entity.getNameKorShort();
         this.nameEng = entity.getNameEng();
         this.nameJpn = entity.getNameJpn();
         this.generation = entity.getGeneration();
