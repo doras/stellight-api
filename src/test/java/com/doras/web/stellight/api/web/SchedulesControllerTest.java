@@ -29,6 +29,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.is;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -578,13 +579,14 @@ public class SchedulesControllerTest {
         String url = "http://localhost:" + port + "/api/v1/schedules";
 
         //when
-        mvc.perform(post(url)
+        String savedId = mvc.perform(post(url)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(jsonMapper.writeValueAsString(requestDto)))
-                .andExpect(status().isOk());
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString();
 
         //then
-        Schedule savedSchedule = scheduleRepository.findAll().get(0);
+        Schedule savedSchedule = scheduleRepository.findById(Long.valueOf(savedId)).orElseThrow();
         assertThat(savedSchedule.getStartDateTime()).isEqualTo(startDateTime);
         assertThat(savedSchedule.getStartDateTimeUntil()).isEqualTo(startDateTimeUntil);
 
@@ -593,10 +595,11 @@ public class SchedulesControllerTest {
                 .andExpect(jsonPath("$.startDateTime", is("2023-02-14T23:30:00")))
                 .andExpect(jsonPath("$.startDateTimeUntil", is("2023-02-15T00:30:00")));
 
-        mvc.perform(get("http://localhost:" + port + "/api/v1/schedule-histories"))
+        mvc.perform(get("http://localhost:" + port + "/api/v1/schedule-histories")
+                        .param("size", "100"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.totalElements").value(1))
-                .andExpect(jsonPath("$.content[0].startDateTimeUntil", is("2023-02-15T00:30:00")));
+                .andExpect(jsonPath("$.content[?(@.scheduleId == " + savedSchedule.getId() + ")].startDateTimeUntil",
+                        contains("2023-02-15T00:30:00")));
     }
 
     /**
@@ -631,7 +634,7 @@ public class SchedulesControllerTest {
                 .andExpect(status().isOk());
 
         //then
-        Schedule modifiedSchedule = scheduleRepository.findAll().get(0);
+        Schedule modifiedSchedule = scheduleRepository.findById(savedSchedule.getId()).orElseThrow();
         assertThat(modifiedSchedule.getStartDateTime()).isEqualTo(actualStartDateTime);
         assertThat(modifiedSchedule.getStartDateTimeUntil()).isNull();
     }
@@ -655,6 +658,7 @@ public class SchedulesControllerTest {
 
         String saveUrl = "http://localhost:" + port + "/api/v1/schedules";
         String updateUrl = saveUrl + "/" + savedSchedule.getId();
+        long countBefore = scheduleRepository.count();
 
         // (isFixedTime, startDateTimeUntil) pairs that must be rejected
         Object[][] invalidCases = {
@@ -692,8 +696,8 @@ public class SchedulesControllerTest {
         }
 
         // nothing was saved or changed
-        assertThat(scheduleRepository.count()).isEqualTo(1);
-        Schedule unchangedSchedule = scheduleRepository.findAll().get(0);
+        assertThat(scheduleRepository.count()).isEqualTo(countBefore);
+        Schedule unchangedSchedule = scheduleRepository.findById(savedSchedule.getId()).orElseThrow();
         assertThat(unchangedSchedule.getTitle()).isEqualTo("스케줄의 이름");
         assertThat(unchangedSchedule.getStartDateTimeUntil()).isNull();
 
@@ -707,7 +711,7 @@ public class SchedulesControllerTest {
                                 .title("스케줄의 이름")
                                 .build())))
                 .andExpect(status().isOk());
-        assertThat(scheduleRepository.findAll().get(0).getStartDateTimeUntil())
+        assertThat(scheduleRepository.findById(savedSchedule.getId()).orElseThrow().getStartDateTimeUntil())
                 .isEqualTo(start.plusHours(12));
     }
 }
