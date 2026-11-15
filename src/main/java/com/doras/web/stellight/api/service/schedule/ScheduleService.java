@@ -22,6 +22,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -35,6 +37,11 @@ public class ScheduleService {
     private final StellarRepository stellarRepository;
     private final ScheduleRepository scheduleRepository;
 
+    /**
+     * Maximum length of the expected start window ({@code startDateTime} ~ {@code startDateTimeUntil}).
+     */
+    private static final Duration MAX_START_WINDOW = Duration.ofHours(12);
+
     @PersistenceContext
     private EntityManager entityManager;
 
@@ -45,6 +52,8 @@ public class ScheduleService {
      */
     @Transactional
     public Long save(ScheduleSaveRequestDto requestDto) {
+        validateStartWindow(requestDto.getIsFixedTime(),
+                requestDto.getStartDateTime(), requestDto.getStartDateTimeUntil());
 
         // find Stellar entity with given stellar id
         // When not found, throw InvalidArgumentException not StellarNotFoundException
@@ -86,14 +95,43 @@ public class ScheduleService {
         Schedule schedule = scheduleRepository.findByIdAndIsDeletedFalse(id)
                 .orElseThrow(() -> new ScheduleNotFoundException(id));
 
+        validateStartWindow(requestDto.getIsFixedTime(),
+                requestDto.getStartDateTime(), requestDto.getStartDateTimeUntil());
+
         // update schedule
         schedule.update(
                 requestDto.getIsFixedTime(),
                 requestDto.getStartDateTime(),
+                requestDto.getStartDateTimeUntil(),
                 requestDto.getTitle(),
                 requestDto.getRemark());
 
         return id;
+    }
+
+    /**
+     * Validate the expected start window of a schedule.
+     * The window is optional; when {@code startDateTimeUntil} is given, the time must be fixed,
+     * and it must be later than {@code startDateTime} by at most {@link #MAX_START_WINDOW}.
+     * @param isFixedTime Whether the time of schedule is fixed or not.
+     * @param startDateTime Beginning of the window.
+     * @param startDateTimeUntil End of the window. Not validated when null.
+     * @throws InvalidArgumentException when the window is invalid.
+     */
+    private void validateStartWindow(Boolean isFixedTime, LocalDateTime startDateTime,
+                                     LocalDateTime startDateTimeUntil) {
+        if (startDateTimeUntil == null) {
+            return;
+        }
+        if (!Boolean.TRUE.equals(isFixedTime)) {
+            throw new InvalidArgumentException("시간 미정인 일정에는 예정 시각을 지정할 수 없습니다.");
+        }
+        if (startDateTime == null || !startDateTimeUntil.isAfter(startDateTime)) {
+            throw new InvalidArgumentException("예정 시각은 시작 시각보다 늦어야 합니다.");
+        }
+        if (Duration.between(startDateTime, startDateTimeUntil).compareTo(MAX_START_WINDOW) > 0) {
+            throw new InvalidArgumentException("예정 시각은 시작 시각으로부터 12시간 이내여야 합니다.");
+        }
     }
 
     /**

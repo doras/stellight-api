@@ -154,7 +154,7 @@ public class ScheduleTest {
         String title = "수정 제목";
         String remark = "수정 비고";
 
-        entity.update(isFixedTime, startDateTime, title, remark);
+        entity.update(isFixedTime, startDateTime, null, title, remark);
 
         entityManager.persist(entity);
 
@@ -191,7 +191,7 @@ public class ScheduleTest {
         LocalDateTime expectedStartDateTime = startDateTime.truncatedTo(ChronoUnit.DAYS);
 
         //when
-        entity.update(false, startDateTime, title, remark);
+        entity.update(false, startDateTime, null, title, remark);
 
         entityManager.persist(entity);
 
@@ -210,5 +210,57 @@ public class ScheduleTest {
         assertThat(scheduleHistory.getStartDateTime()).isEqualTo(expectedStartDateTime);
         assertThat(scheduleHistory.getTitle()).isEqualTo(title);
         assertThat(scheduleHistory.getRemark()).isEqualTo(remark);
+    }
+
+    /**
+     * Test that the expected start window is kept in the entity and copied to its histories.
+     */
+    @Test
+    public void startDateTimeUntil() {
+        //given
+        Stellar stellar = Stellar.builder()
+                .nameKor("스텔라")
+                .nameEng("")
+                .nameJpn("")
+                .generation((byte)2)
+                .debutOrder((byte)1)
+                .personalColor("ffddaa")
+                .build();
+        entityManager.persist(stellar);
+
+        LocalDateTime startDateTime = LocalDateTime.of(2023,2,14,23,30);
+        LocalDateTime startDateTimeUntil = LocalDateTime.of(2023,2,15,0,30);
+
+        //when
+        Schedule entity = Schedule.builder()
+                .stellar(stellar)
+                .isFixedTime(true)
+                .startDateTime(startDateTime)
+                .startDateTimeUntil(startDateTimeUntil)
+                .title("제목")
+                .build();
+        entityManager.persist(entity);
+        entityManager.flush();
+        entityManager.clear();
+
+        //then
+        Schedule foundEntity = entityManager.find(Schedule.class, entity.getId());
+        assertThat(foundEntity.getStartDateTime()).isEqualTo(startDateTime);
+        assertThat(foundEntity.getStartDateTimeUntil()).isEqualTo(startDateTimeUntil);
+        ScheduleHistory scheduleHistory = foundEntity.getScheduleHistories().iterator().next();
+        assertThat(scheduleHistory.getStartDateTimeUntil()).isEqualTo(startDateTimeUntil);
+
+        //when: the stream started, so the window is cleared
+        LocalDateTime actualStartDateTime = LocalDateTime.of(2023,2,14,23,47);
+        foundEntity.update(true, actualStartDateTime, null, "제목", null);
+        entityManager.flush();
+
+        //then
+        assertThat(foundEntity.getStartDateTime()).isEqualTo(actualStartDateTime);
+        assertThat(foundEntity.getStartDateTimeUntil()).isNull();
+        ScheduleHistory latestHistory = foundEntity.getScheduleHistories().stream()
+                .max(Comparator.comparing(ScheduleHistory::getId)).orElseThrow();
+        assertThat(latestHistory.getStartDateTime()).isEqualTo(actualStartDateTime);
+        assertThat(latestHistory.getStartDateTimeUntil()).isNull();
     }
 }

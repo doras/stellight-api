@@ -50,6 +50,13 @@ public class Schedule extends DeletedDateByEntity {
     private LocalDateTime startDateTime;
 
     /**
+     * End of the expected start window, when the exact start time is not certain yet.
+     * The window begins at {@link #startDateTime}. Not necessary.
+     * Only used when {@link #isFixedTime} is true.
+     */
+    private LocalDateTime startDateTimeUntil;
+
+    /**
      * (Required) Title of schedule.
      */
     @Column(nullable = false)
@@ -75,16 +82,19 @@ public class Schedule extends DeletedDateByEntity {
      * @param startDateTime
      *        Value for {@link #startDateTime}.
      *        If {@code isFixedTime} is false, truncate to days. That is, using only date information.
+     * @param startDateTimeUntil Value for {@link #startDateTimeUntil}.
      * @param title Value for {@link #title}.
      * @param remark Value for {@link #remark}.
      */
-    public void update(Boolean isFixedTime, LocalDateTime startDateTime, String title, String remark) {
+    public void update(Boolean isFixedTime, LocalDateTime startDateTime, LocalDateTime startDateTimeUntil,
+                       String title, String remark) {
         this.isFixedTime = isFixedTime;
         if (!isFixedTime) {
             this.startDateTime = startDateTime.truncatedTo(ChronoUnit.DAYS);
         } else {
             this.startDateTime = startDateTime;
         }
+        this.startDateTimeUntil = startDateTimeUntil;
         this.title = title;
         this.remark = remark;
 
@@ -93,6 +103,7 @@ public class Schedule extends DeletedDateByEntity {
                 .schedule(this)
                 .isFixedTime(isFixedTime)
                 .startDateTime(startDateTime)
+                .startDateTimeUntil(startDateTimeUntil)
                 .title(title)
                 .remark(remark)
                 .build());
@@ -107,11 +118,13 @@ public class Schedule extends DeletedDateByEntity {
      * @param startDateTime
      *        Value for {@link #startDateTime}.
      *        If {@code isFixedTime} is false, truncate to days. That is, using only date information.
+     * @param startDateTimeUntil Value for {@link #startDateTimeUntil}.
      * @param title Value for {@link #title}.
      * @param remark Value for {@link #remark}.
      */
     @Builder
-    public Schedule(Stellar stellar, Boolean isFixedTime, LocalDateTime startDateTime, String title, String remark) {
+    public Schedule(Stellar stellar, Boolean isFixedTime, LocalDateTime startDateTime,
+                    LocalDateTime startDateTimeUntil, String title, String remark) {
         this.stellar = stellar;
         this.isFixedTime = isFixedTime;
         if (!isFixedTime) {
@@ -119,6 +132,7 @@ public class Schedule extends DeletedDateByEntity {
         } else {
             this.startDateTime = startDateTime;
         }
+        this.startDateTimeUntil = startDateTimeUntil;
         this.title = title;
         this.remark = remark;
 
@@ -127,6 +141,7 @@ public class Schedule extends DeletedDateByEntity {
                 .schedule(this)
                 .isFixedTime(isFixedTime)
                 .startDateTime(startDateTime)
+                .startDateTimeUntil(startDateTimeUntil)
                 .title(title)
                 .remark(remark)
                 .build());
