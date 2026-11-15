@@ -47,6 +47,12 @@ public class ScheduleHistory extends CreatedDateByEntity {
     private LocalDateTime startDateTime;
 
     /**
+     * End of the expected start window, when the exact start time is not certain yet.
+     * The window begins at {@link #startDateTime}. Not necessary.
+     */
+    private LocalDateTime startDateTimeUntil;
+
+    /**
      * (Required) Title of schedule.
      */
     @Column(nullable = false)
@@ -67,11 +73,13 @@ public class ScheduleHistory extends CreatedDateByEntity {
      * @param startDateTime
      *        Value for {@link #startDateTime}.
      *        If {@code isFixedTime} is false, truncate to days. That is, using only date information.
+     * @param startDateTimeUntil Value for {@link #startDateTimeUntil}.
      * @param title Value for {@link #title}.
      * @param remark Value for {@link #remark}.
      */
     @Builder
-    public ScheduleHistory(Schedule schedule, Boolean isFixedTime, LocalDateTime startDateTime, String title, String remark) {
+    public ScheduleHistory(Schedule schedule, Boolean isFixedTime, LocalDateTime startDateTime,
+                           LocalDateTime startDateTimeUntil, String title, String remark) {
         this.schedule = schedule;
         this.isFixedTime = isFixedTime;
         if (!isFixedTime) {
@@ -79,6 +87,7 @@ public class ScheduleHistory extends CreatedDateByEntity {
         } else {
             this.startDateTime = startDateTime;
         }
+        this.startDateTimeUntil = startDateTimeUntil;
         this.title = title;
         this.remark = remark;
     }

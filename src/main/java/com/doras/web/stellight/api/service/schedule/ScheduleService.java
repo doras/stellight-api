@@ -86,10 +86,11 @@ public class ScheduleService {
         Schedule schedule = scheduleRepository.findByIdAndIsDeletedFalse(id)
                 .orElseThrow(() -> new ScheduleNotFoundException(id));
 
-        // update schedule
+        // update schedule (validated in the entity)
         schedule.update(
                 requestDto.getIsFixedTime(),
                 requestDto.getStartDateTime(),
+                requestDto.getStartDateTimeUntil(),
                 requestDto.getTitle(),
                 requestDto.getRemark());
 

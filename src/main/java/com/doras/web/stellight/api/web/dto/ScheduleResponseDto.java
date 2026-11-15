@@ -16,6 +16,7 @@ public class ScheduleResponseDto {
     private final String stellarNameKor;
     private final Boolean isFixedTime;
     private final LocalDateTime startDateTime;
+    private final LocalDateTime startDateTimeUntil;
     private final String title;
     private final String remark;
 
@@ -25,6 +26,7 @@ public class ScheduleResponseDto {
         this.stellarNameKor = entity.getStellar().getNameKor();
         this.isFixedTime = entity.getIsFixedTime();
         this.startDateTime = entity.getStartDateTime();
+        this.startDateTimeUntil = entity.getStartDateTimeUntil();
         this.title = entity.getTitle();
         this.remark = entity.getRemark();
     }
@@ -39,12 +41,13 @@ public class ScheduleResponseDto {
                 Objects.equals(stellarNameKor, that.stellarNameKor) &&
                 Objects.equals(isFixedTime, that.isFixedTime) &&
                 Objects.equals(startDateTime, that.startDateTime) &&
+                Objects.equals(startDateTimeUntil, that.startDateTimeUntil) &&
                 Objects.equals(title, that.title) &&
                 Objects.equals(remark, that.remark);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, stellarId, stellarNameKor, isFixedTime, startDateTime, title, remark);
+        return Objects.hash(id, stellarId, stellarNameKor, isFixedTime, startDateTime, startDateTimeUntil, title, remark);
     }
 }
