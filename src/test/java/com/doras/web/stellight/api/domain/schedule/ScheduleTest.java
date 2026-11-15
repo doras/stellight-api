@@ -1,6 +1,7 @@
 package com.doras.web.stellight.api.domain.schedule;
 
 import com.doras.web.stellight.api.domain.stellar.Stellar;
+import com.doras.web.stellight.api.exception.InvalidArgumentException;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -16,6 +17,7 @@ import java.util.Collection;
 import java.util.Comparator;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
  * Test class for {@link Schedule}.
@@ -262,5 +264,51 @@ public class ScheduleTest {
                 .max(Comparator.comparing(ScheduleHistory::getId)).orElseThrow();
         assertThat(latestHistory.getStartDateTime()).isEqualTo(actualStartDateTime);
         assertThat(latestHistory.getStartDateTimeUntil()).isNull();
+    }
+
+    /**
+     * Test that the entity rejects an invalid expected start window,
+     * both on construction and on update, and that a rejected update changes nothing.
+     */
+    @Test
+    public void invalidStartDateTimeUntil() {
+        LocalDateTime start = LocalDateTime.of(2023,2,14,16,0);
+        LocalDateTime[][] invalidFixedTimeWindows = {
+                {start, start},                                  // same as the start
+                {start, start.minusMinutes(30)},                 // earlier than the start
+                {start, start.plus(Schedule.MAX_START_WINDOW).plusMinutes(1)}, // too long
+        };
+
+        // construction
+        assertThatThrownBy(() -> Schedule.builder()
+                .isFixedTime(false).startDateTime(start).startDateTimeUntil(start.plusHours(1)).title("제목")
+                .build())
+                .isInstanceOf(InvalidArgumentException.class);
+        for (LocalDateTime[] window : invalidFixedTimeWindows) {
+            assertThatThrownBy(() -> Schedule.builder()
+                    .isFixedTime(true).startDateTime(window[0]).startDateTimeUntil(window[1]).title("제목")
+                    .build())
+                    .isInstanceOf(InvalidArgumentException.class);
+        }
+
+        // exactly the maximum length is allowed
+        Schedule entity = Schedule.builder()
+                .isFixedTime(true)
+                .startDateTime(start)
+                .startDateTimeUntil(start.plus(Schedule.MAX_START_WINDOW))
+                .title("제목")
+                .build();
+        assertThat(entity.getStartDateTimeUntil()).isEqualTo(start.plus(Schedule.MAX_START_WINDOW));
+
+        // update
+        assertThatThrownBy(() -> entity.update(false, start, start.plusHours(1), "수정 제목", null))
+                .isInstanceOf(InvalidArgumentException.class);
+        for (LocalDateTime[] window : invalidFixedTimeWindows) {
+            assertThatThrownBy(() -> entity.update(true, window[0], window[1], "수정 제목", null))
+                    .isInstanceOf(InvalidArgumentException.class);
+        }
+        assertThat(entity.getTitle()).isEqualTo("제목");
+        assertThat(entity.getStartDateTimeUntil()).isEqualTo(start.plus(Schedule.MAX_START_WINDOW));
+        assertThat(entity.getScheduleHistories().size()).isEqualTo(1);
     }
 }

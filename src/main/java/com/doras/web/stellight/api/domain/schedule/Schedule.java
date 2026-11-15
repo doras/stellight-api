@@ -2,11 +2,13 @@ package com.doras.web.stellight.api.domain.schedule;
 
 import com.doras.web.stellight.api.domain.DeletedDateByEntity;
 import com.doras.web.stellight.api.domain.stellar.Stellar;
+import com.doras.web.stellight.api.exception.InvalidArgumentException;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import jakarta.persistence.*;
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.Collection;
@@ -20,6 +22,11 @@ import java.util.HashSet;
 @NoArgsConstructor
 @Entity
 public class Schedule extends DeletedDateByEntity {
+
+    /**
+     * Maximum length of the expected start window ({@link #startDateTime} ~ {@link #startDateTimeUntil}).
+     */
+    public static final Duration MAX_START_WINDOW = Duration.ofHours(12);
 
     /**
      * Primary key
@@ -83,11 +90,15 @@ public class Schedule extends DeletedDateByEntity {
      *        Value for {@link #startDateTime}.
      *        If {@code isFixedTime} is false, truncate to days. That is, using only date information.
      * @param startDateTimeUntil Value for {@link #startDateTimeUntil}.
+     *        Only allowed with a fixed time, later than {@code startDateTime} by at most {@link #MAX_START_WINDOW}.
      * @param title Value for {@link #title}.
      * @param remark Value for {@link #remark}.
+     * @throws InvalidArgumentException when {@code startDateTimeUntil} is invalid. Nothing is changed then.
      */
     public void update(Boolean isFixedTime, LocalDateTime startDateTime, LocalDateTime startDateTimeUntil,
                        String title, String remark) {
+        validateStartWindow(isFixedTime, startDateTime, startDateTimeUntil);
+
         this.isFixedTime = isFixedTime;
         if (!isFixedTime) {
             this.startDateTime = startDateTime.truncatedTo(ChronoUnit.DAYS);
@@ -119,12 +130,16 @@ public class Schedule extends DeletedDateByEntity {
      *        Value for {@link #startDateTime}.
      *        If {@code isFixedTime} is false, truncate to days. That is, using only date information.
      * @param startDateTimeUntil Value for {@link #startDateTimeUntil}.
+     *        Only allowed with a fixed time, later than {@code startDateTime} by at most {@link #MAX_START_WINDOW}.
      * @param title Value for {@link #title}.
      * @param remark Value for {@link #remark}.
+     * @throws InvalidArgumentException when {@code startDateTimeUntil} is invalid.
      */
     @Builder
     public Schedule(Stellar stellar, Boolean isFixedTime, LocalDateTime startDateTime,
                     LocalDateTime startDateTimeUntil, String title, String remark) {
+        validateStartWindow(isFixedTime, startDateTime, startDateTimeUntil);
+
         this.stellar = stellar;
         this.isFixedTime = isFixedTime;
         if (!isFixedTime) {
@@ -153,5 +168,31 @@ public class Schedule extends DeletedDateByEntity {
      */
     public void setStellar(Stellar stellar) {
         this.stellar = stellar;
+    }
+
+    /**
+     * Validate the expected start window.
+     * The window is optional; when {@code startDateTimeUntil} is given, the time must be fixed,
+     * and it must be later than {@code startDateTime} by at most {@link #MAX_START_WINDOW}.
+     * @param isFixedTime Whether the time of schedule is fixed or not.
+     * @param startDateTime Beginning of the window.
+     * @param startDateTimeUntil End of the window. Not validated when null.
+     * @throws InvalidArgumentException when the window is invalid.
+     */
+    private static void validateStartWindow(Boolean isFixedTime, LocalDateTime startDateTime,
+                                            LocalDateTime startDateTimeUntil) {
+        if (startDateTimeUntil == null) {
+            return;
+        }
+        if (!Boolean.TRUE.equals(isFixedTime)) {
+            throw new InvalidArgumentException("시간 미정인 일정에는 예정 시각을 지정할 수 없습니다.");
+        }
+        if (startDateTime == null || !startDateTimeUntil.isAfter(startDateTime)) {
+            throw new InvalidArgumentException("예정 시각은 시작 시각보다 늦어야 합니다.");
+        }
+        if (Duration.between(startDateTime, startDateTimeUntil).compareTo(MAX_START_WINDOW) > 0) {
+            throw new InvalidArgumentException(
+                    "예정 시각은 시작 시각으로부터 " + MAX_START_WINDOW.toHours() + "시간 이내여야 합니다.");
+        }
     }
 }
