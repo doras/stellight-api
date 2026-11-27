@@ -40,6 +40,12 @@ public class ScheduleHistory extends CreatedDateByEntity {
     private Boolean isFixedTime;
 
     /**
+     * (Required) Whether the schedule is a day off (휴방) or not. A day off has no fixed time.
+     */
+    @Column(nullable = false)
+    private Boolean isDayOff;
+
+    /**
      * (Required) Date and time when the schedule starts.
      * If {@link #isFixedTime} is false, time information is not used.
      */
@@ -70,6 +76,7 @@ public class ScheduleHistory extends CreatedDateByEntity {
      * @param isFixedTime
      *        Value for {@link #isFixedTime}.
      *        If false, truncate {@code startDateTime} to days. That is, using only date information.
+     * @param isDayOff Value for {@link #isDayOff}. Null is regarded as false.
      * @param startDateTime
      *        Value for {@link #startDateTime}.
      *        If {@code isFixedTime} is false, truncate to days. That is, using only date information.
@@ -78,10 +85,11 @@ public class ScheduleHistory extends CreatedDateByEntity {
      * @param remark Value for {@link #remark}.
      */
     @Builder
-    public ScheduleHistory(Schedule schedule, Boolean isFixedTime, LocalDateTime startDateTime,
+    public ScheduleHistory(Schedule schedule, Boolean isFixedTime, Boolean isDayOff, LocalDateTime startDateTime,
                            LocalDateTime startDateTimeUntil, String title, String remark) {
         this.schedule = schedule;
         this.isFixedTime = isFixedTime;
+        this.isDayOff = Boolean.TRUE.equals(isDayOff);
         if (!isFixedTime) {
             this.startDateTime = startDateTime.truncatedTo(ChronoUnit.DAYS);
         } else {

@@ -14,15 +14,18 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 public class ScheduleUpdateRequestDto {
     private Boolean isFixedTime;
+    private Boolean isDayOff;
     private LocalDateTime startDateTime;
     private LocalDateTime startDateTimeUntil;
     private String title;
     private String remark;
 
     @Builder
-    public ScheduleUpdateRequestDto(Boolean isFixedTime, LocalDateTime startDateTime,
+    public ScheduleUpdateRequestDto(Boolean isFixedTime, Boolean isDayOff,
+                                    LocalDateTime startDateTime,
                                     LocalDateTime startDateTimeUntil, String title, String remark) {
         this.isFixedTime = isFixedTime;
+        this.isDayOff = isDayOff;
         this.startDateTime = startDateTime;
         this.startDateTimeUntil = startDateTimeUntil;
         this.title = title;

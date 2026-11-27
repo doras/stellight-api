@@ -714,4 +714,103 @@ public class SchedulesControllerTest {
         assertThat(scheduleRepository.findById(savedSchedule.getId()).orElseThrow().getStartDateTimeUntil())
                 .isEqualTo(start.plusHours(12));
     }
+
+    /**
+     * Test for saving, getting and updating a day-off schedule.
+     * The flag is returned by the schedule and schedule history APIs, and an omitted flag is regarded as false.
+     */
+    @Test
+    @WithMockUser(roles = "USER")
+    public void saveAndUpdateDayOffSchedule() throws Exception {
+        //given
+        Stellar stellar = saveStellar();
+        String url = "http://localhost:" + port + "/api/v1/schedules";
+
+        ScheduleSaveRequestDto requestDto = ScheduleSaveRequestDto.builder()
+                .stellarId(stellar.getId())
+                .isFixedTime(false)
+                .isDayOff(true)
+                .startDateTime(LocalDateTime.of(2023, 2, 14, 0, 0))
+                .title("휴방")
+                .build();
+
+        //when
+        String savedId = mvc.perform(post(url)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(jsonMapper.writeValueAsString(requestDto)))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString();
+
+        //then
+        assertThat(scheduleRepository.findById(Long.valueOf(savedId)).orElseThrow().getIsDayOff()).isTrue();
+        mvc.perform(get(url + "/" + savedId))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.isDayOff", is(true)));
+        mvc.perform(get("http://localhost:" + port + "/api/v1/schedule-histories")
+                        .param("size", "100"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content[?(@.scheduleId == " + savedId + ")].isDayOff", contains(true)));
+
+        //when: updated without the flag
+        mvc.perform(put(url + "/" + savedId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(jsonMapper.writeValueAsString(ScheduleUpdateRequestDto.builder()
+                                .isFixedTime(true)
+                                .startDateTime(LocalDateTime.of(2023, 2, 14, 19, 0))
+                                .title("방송")
+                                .build())))
+                .andExpect(status().isOk());
+
+        //then
+        assertThat(scheduleRepository.findById(Long.valueOf(savedId)).orElseThrow().getIsDayOff()).isFalse();
+        mvc.perform(get(url + "/" + savedId))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.isDayOff", is(false)));
+    }
+
+    /**
+     * Test that a day off with a fixed time is rejected on both saving and updating.
+     */
+    @Test
+    @WithMockUser(roles = "USER")
+    public void invalidDayOffWithFixedTime() throws Exception {
+        //given
+        Stellar stellar = saveStellar();
+        LocalDateTime start = LocalDateTime.of(2023, 2, 14, 19, 0);
+        Schedule savedSchedule = scheduleRepository.save(Schedule.builder()
+                .stellar(stellar)
+                .isFixedTime(true)
+                .startDateTime(start)
+                .title("방송")
+                .build());
+        String url = "http://localhost:" + port + "/api/v1/schedules";
+        long countBefore = scheduleRepository.count();
+
+        //when, then
+        mvc.perform(post(url)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(jsonMapper.writeValueAsString(ScheduleSaveRequestDto.builder()
+                                .stellarId(stellar.getId())
+                                .isFixedTime(true)
+                                .isDayOff(true)
+                                .startDateTime(start)
+                                .title("휴방")
+                                .build())))
+                .andExpect(status().isUnprocessableContent());
+
+        mvc.perform(put(url + "/" + savedSchedule.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(jsonMapper.writeValueAsString(ScheduleUpdateRequestDto.builder()
+                                .isFixedTime(true)
+                                .isDayOff(true)
+                                .startDateTime(start)
+                                .title("휴방")
+                                .build())))
+                .andExpect(status().isUnprocessableContent());
+
+        assertThat(scheduleRepository.count()).isEqualTo(countBefore);
+        Schedule unchangedSchedule = scheduleRepository.findById(savedSchedule.getId()).orElseThrow();
+        assertThat(unchangedSchedule.getIsDayOff()).isFalse();
+        assertThat(unchangedSchedule.getTitle()).isEqualTo("방송");
+    }
 }

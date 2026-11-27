@@ -15,16 +15,19 @@ import java.time.LocalDateTime;
 public class ScheduleSaveRequestDto {
     private Long stellarId;
     private Boolean isFixedTime;
+    private Boolean isDayOff;
     private LocalDateTime startDateTime;
     private LocalDateTime startDateTimeUntil;
     private String title;
     private String remark;
 
     @Builder
-    public ScheduleSaveRequestDto(Long stellarId, Boolean isFixedTime, LocalDateTime startDateTime,
+    public ScheduleSaveRequestDto(Long stellarId, Boolean isFixedTime, Boolean isDayOff,
+                                  LocalDateTime startDateTime,
                                   LocalDateTime startDateTimeUntil, String title, String remark) {
         this.stellarId = stellarId;
         this.isFixedTime = isFixedTime;
+        this.isDayOff = isDayOff;
         this.startDateTime = startDateTime;
         this.startDateTimeUntil = startDateTimeUntil;
         this.title = title;
@@ -38,6 +41,7 @@ public class ScheduleSaveRequestDto {
     public Schedule toScheduleEntity() {
         return Schedule.builder()
                 .isFixedTime(isFixedTime)
+                .isDayOff(isDayOff)
                 .startDateTime(startDateTime)
                 .startDateTimeUntil(startDateTimeUntil)
                 .title(title)

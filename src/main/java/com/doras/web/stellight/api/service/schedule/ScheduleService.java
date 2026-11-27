@@ -89,6 +89,7 @@ public class ScheduleService {
         // update schedule (validated in the entity)
         schedule.update(
                 requestDto.getIsFixedTime(),
+                requestDto.getIsDayOff(),
                 requestDto.getStartDateTime(),
                 requestDto.getStartDateTimeUntil(),
                 requestDto.getTitle(),

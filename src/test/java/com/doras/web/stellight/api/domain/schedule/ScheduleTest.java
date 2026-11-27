@@ -156,7 +156,7 @@ public class ScheduleTest {
         String title = "수정 제목";
         String remark = "수정 비고";
 
-        entity.update(isFixedTime, startDateTime, null, title, remark);
+        entity.update(isFixedTime, false, startDateTime, null, title, remark);
 
         entityManager.persist(entity);
 
@@ -193,7 +193,7 @@ public class ScheduleTest {
         LocalDateTime expectedStartDateTime = startDateTime.truncatedTo(ChronoUnit.DAYS);
 
         //when
-        entity.update(false, startDateTime, null, title, remark);
+        entity.update(false, false, startDateTime, null, title, remark);
 
         entityManager.persist(entity);
 
@@ -254,7 +254,7 @@ public class ScheduleTest {
 
         //when: the stream started, so the window is cleared
         LocalDateTime actualStartDateTime = LocalDateTime.of(2023,2,14,23,47);
-        foundEntity.update(true, actualStartDateTime, null, "제목", null);
+        foundEntity.update(true, false, actualStartDateTime, null, "제목", null);
         entityManager.flush();
 
         //then
@@ -301,14 +301,75 @@ public class ScheduleTest {
         assertThat(entity.getStartDateTimeUntil()).isEqualTo(start.plus(Schedule.MAX_START_WINDOW));
 
         // update
-        assertThatThrownBy(() -> entity.update(false, start, start.plusHours(1), "수정 제목", null))
+        assertThatThrownBy(() -> entity.update(false, false, start, start.plusHours(1), "수정 제목", null))
                 .isInstanceOf(InvalidArgumentException.class);
         for (LocalDateTime[] window : invalidFixedTimeWindows) {
-            assertThatThrownBy(() -> entity.update(true, window[0], window[1], "수정 제목", null))
+            assertThatThrownBy(() -> entity.update(true, false, window[0], window[1], "수정 제목", null))
                     .isInstanceOf(InvalidArgumentException.class);
         }
         assertThat(entity.getTitle()).isEqualTo("제목");
         assertThat(entity.getStartDateTimeUntil()).isEqualTo(start.plus(Schedule.MAX_START_WINDOW));
         assertThat(entity.getScheduleHistories().size()).isEqualTo(1);
+    }
+
+    /**
+     * Test for the day-off flag: null is regarded as false, it is copied to the histories,
+     * and a day off with a fixed time is rejected.
+     */
+    @Test
+    public void isDayOff() {
+        //given
+        Stellar stellar = Stellar.builder()
+                .nameKor("스텔라")
+                .nameEng("")
+                .nameJpn("")
+                .generation((byte)2)
+                .debutOrder((byte)1)
+                .personalColor("ffddaa")
+                .build();
+        entityManager.persist(stellar);
+        LocalDateTime start = LocalDateTime.of(2023,2,14,19,0);
+
+        //when: not given
+        Schedule notGiven = Schedule.builder()
+                .stellar(stellar).isFixedTime(true).startDateTime(start).title("방송").build();
+        entityManager.persist(notGiven);
+
+        //then
+        assertThat(notGiven.getIsDayOff()).isFalse();
+        assertThat(notGiven.getScheduleHistories().iterator().next().getIsDayOff()).isFalse();
+
+        //when: a day off
+        Schedule dayOff = Schedule.builder()
+                .stellar(stellar).isFixedTime(false).isDayOff(true).startDateTime(start).title("휴방").build();
+        entityManager.persist(dayOff);
+        entityManager.flush();
+        entityManager.clear();
+
+        //then
+        Schedule foundEntity = entityManager.find(Schedule.class, dayOff.getId());
+        assertThat(foundEntity.getIsDayOff()).isTrue();
+        assertThat(foundEntity.getScheduleHistories().iterator().next().getIsDayOff()).isTrue();
+
+        //when: updated to a stream
+        foundEntity.update(true, null, start, null, "방송", null);
+        entityManager.flush();
+
+        //then
+        assertThat(foundEntity.getIsDayOff()).isFalse();
+        ScheduleHistory latestHistory = foundEntity.getScheduleHistories().stream()
+                .max(Comparator.comparing(ScheduleHistory::getId)).orElseThrow();
+        assertThat(latestHistory.getIsDayOff()).isFalse();
+
+        // a day off with a fixed time is rejected, and a rejected update changes nothing
+        assertThatThrownBy(() -> Schedule.builder()
+                .stellar(stellar).isFixedTime(true).isDayOff(true).startDateTime(start).title("휴방").build())
+                .isInstanceOf(InvalidArgumentException.class);
+        int historyCount = foundEntity.getScheduleHistories().size();
+        assertThatThrownBy(() -> foundEntity.update(true, true, start, null, "휴방", null))
+                .isInstanceOf(InvalidArgumentException.class);
+        assertThat(foundEntity.getIsDayOff()).isFalse();
+        assertThat(foundEntity.getTitle()).isEqualTo("방송");
+        assertThat(foundEntity.getScheduleHistories().size()).isEqualTo(historyCount);
     }
 }
