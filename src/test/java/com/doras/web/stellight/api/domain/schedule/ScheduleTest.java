@@ -313,7 +313,8 @@ public class ScheduleTest {
     }
 
     /**
-     * Test for the day-off flag: null is regarded as false on creation and keeps the current value on update,
+     * Test for the day-off flag: null is regarded as false on creation and keeps the current value on update
+     * (except with a fixed time, which clears it),
      * it is copied to the histories, and a day off with a fixed time is rejected.
      */
     @Test
@@ -360,8 +361,8 @@ public class ScheduleTest {
         assertThat(foundEntity.getScheduleHistories().stream()
                 .max(Comparator.comparing(ScheduleHistory::getId)).orElseThrow().getIsDayOff()).isTrue();
 
-        //when: updated to a stream
-        foundEntity.update(true, false, start, null, "방송", null);
+        //when: updated to a stream without the flag (a fixed time is never a day off)
+        foundEntity.update(true, null, start, null, "방송", null);
         entityManager.flush();
 
         //then

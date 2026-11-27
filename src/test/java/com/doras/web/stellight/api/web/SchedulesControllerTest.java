@@ -717,7 +717,8 @@ public class SchedulesControllerTest {
 
     /**
      * Test for saving, getting and updating a day-off schedule.
-     * The flag is returned by the schedule and schedule history APIs, and an omitted flag keeps the current value.
+     * The flag is returned by the schedule and schedule history APIs, and an omitted flag keeps the current value
+     * unless the time is fixed (so clients unaware of the flag can still turn a day off into a stream).
      */
     @Test
     @WithMockUser(roles = "USER")
@@ -766,12 +767,11 @@ public class SchedulesControllerTest {
         assertThat(keptSchedule.getIsDayOff()).isTrue();
         assertThat(keptSchedule.getTitle()).isEqualTo("휴방 (감기)");
 
-        //when: updated to a stream explicitly
+        //when: updated to a stream without the flag
         mvc.perform(put(url + "/" + savedId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(jsonMapper.writeValueAsString(ScheduleUpdateRequestDto.builder()
                                 .isFixedTime(true)
-                                .isDayOff(false)
                                 .startDateTime(LocalDateTime.of(2023, 2, 14, 19, 0))
                                 .title("방송")
                                 .build())))
