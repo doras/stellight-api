@@ -717,7 +717,7 @@ public class SchedulesControllerTest {
 
     /**
      * Test for saving, getting and updating a day-off schedule.
-     * The flag is returned by the schedule and schedule history APIs, and an omitted flag is regarded as false.
+     * The flag is returned by the schedule and schedule history APIs, and an omitted flag keeps the current value.
      */
     @Test
     @WithMockUser(roles = "USER")
@@ -751,11 +751,27 @@ public class SchedulesControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content[?(@.scheduleId == " + savedId + ")].isDayOff", contains(true)));
 
-        //when: updated without the flag
+        //when: updated without the flag (e.g. by a client unaware of it)
+        mvc.perform(put(url + "/" + savedId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(jsonMapper.writeValueAsString(ScheduleUpdateRequestDto.builder()
+                                .isFixedTime(false)
+                                .startDateTime(LocalDateTime.of(2023, 2, 14, 0, 0))
+                                .title("휴방 (감기)")
+                                .build())))
+                .andExpect(status().isOk());
+
+        //then: the flag is kept
+        Schedule keptSchedule = scheduleRepository.findById(Long.valueOf(savedId)).orElseThrow();
+        assertThat(keptSchedule.getIsDayOff()).isTrue();
+        assertThat(keptSchedule.getTitle()).isEqualTo("휴방 (감기)");
+
+        //when: updated to a stream explicitly
         mvc.perform(put(url + "/" + savedId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(jsonMapper.writeValueAsString(ScheduleUpdateRequestDto.builder()
                                 .isFixedTime(true)
+                                .isDayOff(false)
                                 .startDateTime(LocalDateTime.of(2023, 2, 14, 19, 0))
                                 .title("방송")
                                 .build())))

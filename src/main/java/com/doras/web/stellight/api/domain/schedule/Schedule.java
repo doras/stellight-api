@@ -93,7 +93,8 @@ public class Schedule extends DeletedDateByEntity {
      *        Value for {@link #isFixedTime}.
      *        If false, truncate {@code startDateTime} to days. That is, using only date information.
      * @param isDayOff
-     *        Value for {@link #isDayOff}. Null is regarded as false. If true, {@code isFixedTime} must be false.
+     *        Value for {@link #isDayOff}. If true, {@code isFixedTime} must be false.
+     *        Null keeps the current value, so that clients unaware of the field don't clear it.
      * @param startDateTime
      *        Value for {@link #startDateTime}.
      *        If {@code isFixedTime} is false, truncate to days. That is, using only date information.
@@ -106,7 +107,7 @@ public class Schedule extends DeletedDateByEntity {
      */
     public void update(Boolean isFixedTime, Boolean isDayOff, LocalDateTime startDateTime,
                        LocalDateTime startDateTimeUntil, String title, String remark) {
-        isDayOff = Boolean.TRUE.equals(isDayOff);
+        isDayOff = isDayOff == null ? Boolean.TRUE.equals(this.isDayOff) : isDayOff;
         validate(isFixedTime, isDayOff, startDateTime, startDateTimeUntil);
 
         this.isFixedTime = isFixedTime;
