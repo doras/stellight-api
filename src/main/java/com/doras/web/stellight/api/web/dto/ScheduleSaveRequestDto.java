@@ -16,14 +16,17 @@ public class ScheduleSaveRequestDto {
     private Long stellarId;
     private Boolean isFixedTime;
     private LocalDateTime startDateTime;
+    private LocalDateTime startDateTimeUntil;
     private String title;
     private String remark;
 
     @Builder
-    public ScheduleSaveRequestDto(Long stellarId, Boolean isFixedTime, LocalDateTime startDateTime, String title, String remark) {
+    public ScheduleSaveRequestDto(Long stellarId, Boolean isFixedTime, LocalDateTime startDateTime,
+                                  LocalDateTime startDateTimeUntil, String title, String remark) {
         this.stellarId = stellarId;
         this.isFixedTime = isFixedTime;
         this.startDateTime = startDateTime;
+        this.startDateTimeUntil = startDateTimeUntil;
         this.title = title;
         this.remark = remark;
     }
@@ -36,6 +39,7 @@ public class ScheduleSaveRequestDto {
         return Schedule.builder()
                 .isFixedTime(isFixedTime)
                 .startDateTime(startDateTime)
+                .startDateTimeUntil(startDateTimeUntil)
                 .title(title)
                 .remark(remark)
                 .build();

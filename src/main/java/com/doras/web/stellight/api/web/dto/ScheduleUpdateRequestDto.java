@@ -15,13 +15,16 @@ import java.time.LocalDateTime;
 public class ScheduleUpdateRequestDto {
     private Boolean isFixedTime;
     private LocalDateTime startDateTime;
+    private LocalDateTime startDateTimeUntil;
     private String title;
     private String remark;
 
     @Builder
-    public ScheduleUpdateRequestDto(Boolean isFixedTime, LocalDateTime startDateTime, String title, String remark) {
+    public ScheduleUpdateRequestDto(Boolean isFixedTime, LocalDateTime startDateTime,
+                                    LocalDateTime startDateTimeUntil, String title, String remark) {
         this.isFixedTime = isFixedTime;
         this.startDateTime = startDateTime;
+        this.startDateTimeUntil = startDateTimeUntil;
         this.title = title;
         this.remark = remark;
     }

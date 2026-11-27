@@ -15,6 +15,7 @@ public class ScheduleHistoryResponseDto {
     private final Long scheduleId;
     private final Boolean isFixedTime;
     private final LocalDateTime startDateTime;
+    private final LocalDateTime startDateTimeUntil;
     private final String title;
     private final String remark;
     private final String createdBy;
@@ -24,6 +25,7 @@ public class ScheduleHistoryResponseDto {
         this.scheduleId = entity.getSchedule().getId();
         this.isFixedTime = entity.getIsFixedTime();
         this.startDateTime = entity.getStartDateTime();
+        this.startDateTimeUntil = entity.getStartDateTimeUntil();
         this.title = entity.getTitle();
         this.remark = entity.getRemark();
         this.createdBy = entity.getCreatedBy();
@@ -38,6 +40,7 @@ public class ScheduleHistoryResponseDto {
                 Objects.equals(scheduleId, that.scheduleId) &&
                 Objects.equals(isFixedTime, that.isFixedTime) &&
                 Objects.equals(startDateTime, that.startDateTime) &&
+                Objects.equals(startDateTimeUntil, that.startDateTimeUntil) &&
                 Objects.equals(title, that.title) &&
                 Objects.equals(remark, that.remark) &&
                 Objects.equals(createdBy, that.createdBy);
@@ -45,6 +48,6 @@ public class ScheduleHistoryResponseDto {
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, scheduleId, isFixedTime, startDateTime, title, remark, createdBy);
+        return Objects.hash(id, scheduleId, isFixedTime, startDateTime, startDateTimeUntil, title, remark, createdBy);
     }
 }

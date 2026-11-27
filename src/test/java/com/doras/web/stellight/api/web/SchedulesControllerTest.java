@@ -29,6 +29,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.is;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -538,5 +539,179 @@ public class SchedulesControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.totalElements").value(1))
                 .andExpect(jsonPath("$.content[0].id", is(savedSchedule.getId()), Long.class));
+    }
+
+    /**
+     * Save a stellar used by the tests about the expected start window.
+     * @return saved stellar
+     */
+    private Stellar saveStellar() {
+        return stellarRepository.save(Stellar.builder()
+                .nameKor("한국 이름")
+                .nameEng("english name")
+                .nameJpn("日本語の名前")
+                .generation((byte)2)
+                .debutOrder((byte)1)
+                .personalColor("ffddaa")
+                .build());
+    }
+
+    /**
+     * Test for saving and getting a schedule with an expected start window ending on the next day.
+     * The schedule history keeps the window too.
+     */
+    @Test
+    @WithMockUser(roles = "USER")
+    public void saveScheduleWithStartWindow() throws Exception {
+        //given
+        Stellar stellar = saveStellar();
+        LocalDateTime startDateTime = LocalDateTime.of(2023, 2, 14, 23, 30);
+        LocalDateTime startDateTimeUntil = LocalDateTime.of(2023, 2, 15, 0, 30);
+
+        ScheduleSaveRequestDto requestDto = ScheduleSaveRequestDto.builder()
+                .stellarId(stellar.getId())
+                .isFixedTime(true)
+                .startDateTime(startDateTime)
+                .startDateTimeUntil(startDateTimeUntil)
+                .title("생일 방송 예정")
+                .build();
+
+        String url = "http://localhost:" + port + "/api/v1/schedules";
+
+        //when
+        String savedId = mvc.perform(post(url)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(jsonMapper.writeValueAsString(requestDto)))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString();
+
+        //then
+        Schedule savedSchedule = scheduleRepository.findById(Long.valueOf(savedId)).orElseThrow();
+        assertThat(savedSchedule.getStartDateTime()).isEqualTo(startDateTime);
+        assertThat(savedSchedule.getStartDateTimeUntil()).isEqualTo(startDateTimeUntil);
+
+        mvc.perform(get(url + "/" + savedSchedule.getId()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.startDateTime", is("2023-02-14T23:30:00")))
+                .andExpect(jsonPath("$.startDateTimeUntil", is("2023-02-15T00:30:00")));
+
+        mvc.perform(get("http://localhost:" + port + "/api/v1/schedule-histories")
+                        .param("size", "100"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content[?(@.scheduleId == " + savedSchedule.getId() + ")].startDateTimeUntil",
+                        contains("2023-02-15T00:30:00")));
+    }
+
+    /**
+     * Test that updating without an expected start window clears it.
+     */
+    @Test
+    @WithMockUser(roles = "USER")
+    public void updateScheduleClearsStartWindow() throws Exception {
+        //given
+        Stellar stellar = saveStellar();
+        Schedule savedSchedule = scheduleRepository.save(Schedule.builder()
+                .stellar(stellar)
+                .isFixedTime(true)
+                .startDateTime(LocalDateTime.of(2023, 2, 14, 16, 0))
+                .startDateTimeUntil(LocalDateTime.of(2023, 2, 14, 17, 0))
+                .title("생일 방송 예정")
+                .build());
+
+        LocalDateTime actualStartDateTime = LocalDateTime.of(2023, 2, 14, 16, 23);
+        ScheduleUpdateRequestDto requestDto = ScheduleUpdateRequestDto.builder()
+                .isFixedTime(true)
+                .startDateTime(actualStartDateTime)
+                .title("생일 방송")
+                .build();
+
+        String url = "http://localhost:" + port + "/api/v1/schedules/" + savedSchedule.getId();
+
+        //when
+        mvc.perform(put(url)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(jsonMapper.writeValueAsString(requestDto)))
+                .andExpect(status().isOk());
+
+        //then
+        Schedule modifiedSchedule = scheduleRepository.findById(savedSchedule.getId()).orElseThrow();
+        assertThat(modifiedSchedule.getStartDateTime()).isEqualTo(actualStartDateTime);
+        assertThat(modifiedSchedule.getStartDateTimeUntil()).isNull();
+    }
+
+    /**
+     * Test that an invalid expected start window is rejected on both saving and updating,
+     * and that a window of exactly 12 hours is allowed.
+     */
+    @Test
+    @WithMockUser(roles = "USER")
+    public void invalidStartWindow() throws Exception {
+        //given
+        Stellar stellar = saveStellar();
+        LocalDateTime start = LocalDateTime.of(2023, 2, 14, 16, 0);
+        Schedule savedSchedule = scheduleRepository.save(Schedule.builder()
+                .stellar(stellar)
+                .isFixedTime(true)
+                .startDateTime(start)
+                .title("스케줄의 이름")
+                .build());
+
+        String saveUrl = "http://localhost:" + port + "/api/v1/schedules";
+        String updateUrl = saveUrl + "/" + savedSchedule.getId();
+        long countBefore = scheduleRepository.count();
+
+        // (isFixedTime, startDateTimeUntil) pairs that must be rejected
+        Object[][] invalidCases = {
+                {false, start.plusHours(1)},                // time is not fixed
+                {true, start},                              // same as the start
+                {true, start.minusMinutes(30)},             // earlier than the start
+                {true, start.plusHours(12).plusMinutes(1)}, // longer than 12 hours
+        };
+
+        for (Object[] invalidCase : invalidCases) {
+            Boolean isFixedTime = (Boolean) invalidCase[0];
+            LocalDateTime until = (LocalDateTime) invalidCase[1];
+
+            //when, then
+            mvc.perform(post(saveUrl)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(jsonMapper.writeValueAsString(ScheduleSaveRequestDto.builder()
+                                    .stellarId(stellar.getId())
+                                    .isFixedTime(isFixedTime)
+                                    .startDateTime(start)
+                                    .startDateTimeUntil(until)
+                                    .title("스케줄의 이름")
+                                    .build())))
+                    .andExpect(status().isUnprocessableContent());
+
+            mvc.perform(put(updateUrl)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(jsonMapper.writeValueAsString(ScheduleUpdateRequestDto.builder()
+                                    .isFixedTime(isFixedTime)
+                                    .startDateTime(start)
+                                    .startDateTimeUntil(until)
+                                    .title("수정된 스케줄의 이름")
+                                    .build())))
+                    .andExpect(status().isUnprocessableContent());
+        }
+
+        // nothing was saved or changed
+        assertThat(scheduleRepository.count()).isEqualTo(countBefore);
+        Schedule unchangedSchedule = scheduleRepository.findById(savedSchedule.getId()).orElseThrow();
+        assertThat(unchangedSchedule.getTitle()).isEqualTo("스케줄의 이름");
+        assertThat(unchangedSchedule.getStartDateTimeUntil()).isNull();
+
+        // exactly 12 hours is allowed
+        mvc.perform(put(updateUrl)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(jsonMapper.writeValueAsString(ScheduleUpdateRequestDto.builder()
+                                .isFixedTime(true)
+                                .startDateTime(start)
+                                .startDateTimeUntil(start.plusHours(12))
+                                .title("스케줄의 이름")
+                                .build())))
+                .andExpect(status().isOk());
+        assertThat(scheduleRepository.findById(savedSchedule.getId()).orElseThrow().getStartDateTimeUntil())
+                .isEqualTo(start.plusHours(12));
     }
 }

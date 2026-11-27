@@ -1,6 +1,7 @@
 package com.doras.web.stellight.api.domain.schedule;
 
 import com.doras.web.stellight.api.domain.stellar.Stellar;
+import com.doras.web.stellight.api.exception.InvalidArgumentException;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -16,6 +17,7 @@ import java.util.Collection;
 import java.util.Comparator;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
  * Test class for {@link Schedule}.
@@ -154,7 +156,7 @@ public class ScheduleTest {
         String title = "수정 제목";
         String remark = "수정 비고";
 
-        entity.update(isFixedTime, startDateTime, title, remark);
+        entity.update(isFixedTime, startDateTime, null, title, remark);
 
         entityManager.persist(entity);
 
@@ -191,7 +193,7 @@ public class ScheduleTest {
         LocalDateTime expectedStartDateTime = startDateTime.truncatedTo(ChronoUnit.DAYS);
 
         //when
-        entity.update(false, startDateTime, title, remark);
+        entity.update(false, startDateTime, null, title, remark);
 
         entityManager.persist(entity);
 
@@ -210,5 +212,103 @@ public class ScheduleTest {
         assertThat(scheduleHistory.getStartDateTime()).isEqualTo(expectedStartDateTime);
         assertThat(scheduleHistory.getTitle()).isEqualTo(title);
         assertThat(scheduleHistory.getRemark()).isEqualTo(remark);
+    }
+
+    /**
+     * Test that the expected start window is kept in the entity and copied to its histories.
+     */
+    @Test
+    public void startDateTimeUntil() {
+        //given
+        Stellar stellar = Stellar.builder()
+                .nameKor("스텔라")
+                .nameEng("")
+                .nameJpn("")
+                .generation((byte)2)
+                .debutOrder((byte)1)
+                .personalColor("ffddaa")
+                .build();
+        entityManager.persist(stellar);
+
+        LocalDateTime startDateTime = LocalDateTime.of(2023,2,14,23,30);
+        LocalDateTime startDateTimeUntil = LocalDateTime.of(2023,2,15,0,30);
+
+        //when
+        Schedule entity = Schedule.builder()
+                .stellar(stellar)
+                .isFixedTime(true)
+                .startDateTime(startDateTime)
+                .startDateTimeUntil(startDateTimeUntil)
+                .title("제목")
+                .build();
+        entityManager.persist(entity);
+        entityManager.flush();
+        entityManager.clear();
+
+        //then
+        Schedule foundEntity = entityManager.find(Schedule.class, entity.getId());
+        assertThat(foundEntity.getStartDateTime()).isEqualTo(startDateTime);
+        assertThat(foundEntity.getStartDateTimeUntil()).isEqualTo(startDateTimeUntil);
+        ScheduleHistory scheduleHistory = foundEntity.getScheduleHistories().iterator().next();
+        assertThat(scheduleHistory.getStartDateTimeUntil()).isEqualTo(startDateTimeUntil);
+
+        //when: the stream started, so the window is cleared
+        LocalDateTime actualStartDateTime = LocalDateTime.of(2023,2,14,23,47);
+        foundEntity.update(true, actualStartDateTime, null, "제목", null);
+        entityManager.flush();
+
+        //then
+        assertThat(foundEntity.getStartDateTime()).isEqualTo(actualStartDateTime);
+        assertThat(foundEntity.getStartDateTimeUntil()).isNull();
+        ScheduleHistory latestHistory = foundEntity.getScheduleHistories().stream()
+                .max(Comparator.comparing(ScheduleHistory::getId)).orElseThrow();
+        assertThat(latestHistory.getStartDateTime()).isEqualTo(actualStartDateTime);
+        assertThat(latestHistory.getStartDateTimeUntil()).isNull();
+    }
+
+    /**
+     * Test that the entity rejects an invalid expected start window,
+     * both on construction and on update, and that a rejected update changes nothing.
+     */
+    @Test
+    public void invalidStartDateTimeUntil() {
+        LocalDateTime start = LocalDateTime.of(2023,2,14,16,0);
+        LocalDateTime[][] invalidFixedTimeWindows = {
+                {start, start},                                  // same as the start
+                {start, start.minusMinutes(30)},                 // earlier than the start
+                {start, start.plus(Schedule.MAX_START_WINDOW).plusMinutes(1)}, // too long
+        };
+
+        // construction
+        assertThatThrownBy(() -> Schedule.builder()
+                .isFixedTime(false).startDateTime(start).startDateTimeUntil(start.plusHours(1)).title("제목")
+                .build())
+                .isInstanceOf(InvalidArgumentException.class);
+        for (LocalDateTime[] window : invalidFixedTimeWindows) {
+            assertThatThrownBy(() -> Schedule.builder()
+                    .isFixedTime(true).startDateTime(window[0]).startDateTimeUntil(window[1]).title("제목")
+                    .build())
+                    .isInstanceOf(InvalidArgumentException.class);
+        }
+
+        // exactly the maximum length is allowed
+        Schedule entity = Schedule.builder()
+                .isFixedTime(true)
+                .startDateTime(start)
+                .startDateTimeUntil(start.plus(Schedule.MAX_START_WINDOW))
+                .title("제목")
+                .build();
+        assertThat(entity.getStartDateTimeUntil()).isEqualTo(start.plus(Schedule.MAX_START_WINDOW));
+
+        // update
+        assertThatThrownBy(() -> entity.update(false, start, start.plusHours(1), "수정 제목", null))
+                .isInstanceOf(InvalidArgumentException.class);
+        for (LocalDateTime[] window : invalidFixedTimeWindows) {
+            assertThatThrownBy(() -> entity.update(true, window[0], window[1], "수정 제목", null))
+                    .isInstanceOf(InvalidArgumentException.class);
+        }
+        assertThat(entity.getTitle()).isEqualTo("제목");
+        assertThat(entity.getStartDateTimeUntil()).isEqualTo(start.plus(Schedule.MAX_START_WINDOW));
+        assertThat(entity.getScheduleHistories().size()).isEqualTo(1);
     }
 }
