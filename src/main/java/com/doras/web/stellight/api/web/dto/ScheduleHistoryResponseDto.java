@@ -14,6 +14,7 @@ public class ScheduleHistoryResponseDto {
     private final Long id;
     private final Long scheduleId;
     private final Boolean isFixedTime;
+    private final Boolean isDayOff;
     private final LocalDateTime startDateTime;
     private final LocalDateTime startDateTimeUntil;
     private final String title;
@@ -24,6 +25,7 @@ public class ScheduleHistoryResponseDto {
         this.id = entity.getId();
         this.scheduleId = entity.getSchedule().getId();
         this.isFixedTime = entity.getIsFixedTime();
+        this.isDayOff = entity.getIsDayOff();
         this.startDateTime = entity.getStartDateTime();
         this.startDateTimeUntil = entity.getStartDateTimeUntil();
         this.title = entity.getTitle();
@@ -39,6 +41,7 @@ public class ScheduleHistoryResponseDto {
         return Objects.equals(id, that.id) &&
                 Objects.equals(scheduleId, that.scheduleId) &&
                 Objects.equals(isFixedTime, that.isFixedTime) &&
+                Objects.equals(isDayOff, that.isDayOff) &&
                 Objects.equals(startDateTime, that.startDateTime) &&
                 Objects.equals(startDateTimeUntil, that.startDateTimeUntil) &&
                 Objects.equals(title, that.title) &&
@@ -48,6 +51,6 @@ public class ScheduleHistoryResponseDto {
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, scheduleId, isFixedTime, startDateTime, startDateTimeUntil, title, remark, createdBy);
+        return Objects.hash(id, scheduleId, isFixedTime, isDayOff, startDateTime, startDateTimeUntil, title, remark, createdBy);
     }
 }

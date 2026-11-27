@@ -50,6 +50,12 @@ public class Schedule extends DeletedDateByEntity {
     private Boolean isFixedTime;
 
     /**
+     * (Required) Whether the schedule is a day off (휴방) or not. A day off has no fixed time.
+     */
+    @Column(nullable = false)
+    private Boolean isDayOff;
+
+    /**
      * (Required) Date and time when the schedule starts.
      * If {@link #isFixedTime} is false, time information is not used.
      */
@@ -86,6 +92,11 @@ public class Schedule extends DeletedDateByEntity {
      * @param isFixedTime
      *        Value for {@link #isFixedTime}.
      *        If false, truncate {@code startDateTime} to days. That is, using only date information.
+     * @param isDayOff
+     *        Value for {@link #isDayOff}. If true, {@code isFixedTime} must be false.
+     *        Null keeps the current value, so that clients unaware of the field don't clear it,
+     *        except with a fixed time, which is never a day off (so such clients can still turn a day off
+     *        into a stream).
      * @param startDateTime
      *        Value for {@link #startDateTime}.
      *        If {@code isFixedTime} is false, truncate to days. That is, using only date information.
@@ -93,13 +104,18 @@ public class Schedule extends DeletedDateByEntity {
      *        Only allowed with a fixed time, later than {@code startDateTime} by at most {@link #MAX_START_WINDOW}.
      * @param title Value for {@link #title}.
      * @param remark Value for {@link #remark}.
-     * @throws InvalidArgumentException when {@code startDateTimeUntil} is invalid. Nothing is changed then.
+     * @throws InvalidArgumentException
+     *         when {@code isDayOff} or {@code startDateTimeUntil} is invalid. Nothing is changed then.
      */
-    public void update(Boolean isFixedTime, LocalDateTime startDateTime, LocalDateTime startDateTimeUntil,
-                       String title, String remark) {
-        validateStartWindow(isFixedTime, startDateTime, startDateTimeUntil);
+    public void update(Boolean isFixedTime, Boolean isDayOff, LocalDateTime startDateTime,
+                       LocalDateTime startDateTimeUntil, String title, String remark) {
+        if (isDayOff == null) {
+            isDayOff = !Boolean.TRUE.equals(isFixedTime) && Boolean.TRUE.equals(this.isDayOff);
+        }
+        validate(isFixedTime, isDayOff, startDateTime, startDateTimeUntil);
 
         this.isFixedTime = isFixedTime;
+        this.isDayOff = isDayOff;
         if (!isFixedTime) {
             this.startDateTime = startDateTime.truncatedTo(ChronoUnit.DAYS);
         } else {
@@ -113,6 +129,7 @@ public class Schedule extends DeletedDateByEntity {
         this.scheduleHistories.add(ScheduleHistory.builder()
                 .schedule(this)
                 .isFixedTime(isFixedTime)
+                .isDayOff(isDayOff)
                 .startDateTime(startDateTime)
                 .startDateTimeUntil(startDateTimeUntil)
                 .title(title)
@@ -126,6 +143,8 @@ public class Schedule extends DeletedDateByEntity {
      * @param isFixedTime
      *        Value for {@link #isFixedTime}.
      *        If false, truncate {@code startDateTime} to days. That is, using only date information.
+     * @param isDayOff
+     *        Value for {@link #isDayOff}. Null is regarded as false. If true, {@code isFixedTime} must be false.
      * @param startDateTime
      *        Value for {@link #startDateTime}.
      *        If {@code isFixedTime} is false, truncate to days. That is, using only date information.
@@ -133,15 +152,17 @@ public class Schedule extends DeletedDateByEntity {
      *        Only allowed with a fixed time, later than {@code startDateTime} by at most {@link #MAX_START_WINDOW}.
      * @param title Value for {@link #title}.
      * @param remark Value for {@link #remark}.
-     * @throws InvalidArgumentException when {@code startDateTimeUntil} is invalid.
+     * @throws InvalidArgumentException when {@code isDayOff} or {@code startDateTimeUntil} is invalid.
      */
     @Builder
-    public Schedule(Stellar stellar, Boolean isFixedTime, LocalDateTime startDateTime,
+    public Schedule(Stellar stellar, Boolean isFixedTime, Boolean isDayOff, LocalDateTime startDateTime,
                     LocalDateTime startDateTimeUntil, String title, String remark) {
-        validateStartWindow(isFixedTime, startDateTime, startDateTimeUntil);
+        isDayOff = Boolean.TRUE.equals(isDayOff);
+        validate(isFixedTime, isDayOff, startDateTime, startDateTimeUntil);
 
         this.stellar = stellar;
         this.isFixedTime = isFixedTime;
+        this.isDayOff = isDayOff;
         if (!isFixedTime) {
             this.startDateTime = startDateTime.truncatedTo(ChronoUnit.DAYS);
         } else {
@@ -155,6 +176,7 @@ public class Schedule extends DeletedDateByEntity {
         this.scheduleHistories.add(ScheduleHistory.builder()
                 .schedule(this)
                 .isFixedTime(isFixedTime)
+                .isDayOff(isDayOff)
                 .startDateTime(startDateTime)
                 .startDateTimeUntil(startDateTimeUntil)
                 .title(title)
@@ -171,16 +193,23 @@ public class Schedule extends DeletedDateByEntity {
     }
 
     /**
-     * Validate the expected start window.
-     * The window is optional; when {@code startDateTimeUntil} is given, the time must be fixed,
-     * and it must be later than {@code startDateTime} by at most {@link #MAX_START_WINDOW}.
+     * Validate the values of a schedule.
+     * <ul>
+     *     <li>A day off has no fixed time.</li>
+     *     <li>The expected start window is optional; when {@code startDateTimeUntil} is given, the time must be
+     *     fixed, and it must be later than {@code startDateTime} by at most {@link #MAX_START_WINDOW}.</li>
+     * </ul>
      * @param isFixedTime Whether the time of schedule is fixed or not.
+     * @param isDayOff Whether the schedule is a day off or not. Not null.
      * @param startDateTime Beginning of the window.
      * @param startDateTimeUntil End of the window. Not validated when null.
-     * @throws InvalidArgumentException when the window is invalid.
+     * @throws InvalidArgumentException when the values are invalid.
      */
-    private static void validateStartWindow(Boolean isFixedTime, LocalDateTime startDateTime,
-                                            LocalDateTime startDateTimeUntil) {
+    private static void validate(Boolean isFixedTime, boolean isDayOff, LocalDateTime startDateTime,
+                                 LocalDateTime startDateTimeUntil) {
+        if (isDayOff && Boolean.TRUE.equals(isFixedTime)) {
+            throw new InvalidArgumentException("휴방 일정은 시간 미정이어야 합니다.");
+        }
         if (startDateTimeUntil == null) {
             return;
         }

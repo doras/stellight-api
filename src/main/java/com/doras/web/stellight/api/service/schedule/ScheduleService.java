@@ -35,6 +35,12 @@ public class ScheduleService {
     private final StellarRepository stellarRepository;
     private final ScheduleRepository scheduleRepository;
 
+    /**
+     * Message when a stellar would have more than one day off on a date.
+     * Not serialized: two truly concurrent requests may both pass the check (see #97).
+     */
+    private static final String DUPLICATE_DAY_OFF_MESSAGE = "해당 날짜에 이미 휴방 일정이 있습니다.";
+
     @PersistenceContext
     private EntityManager entityManager;
 
@@ -56,6 +62,13 @@ public class ScheduleService {
         // make Schedule entity with Stellar
         Schedule schedule = requestDto.toScheduleEntity();
         schedule.setStellar(stellar);
+
+        if (Boolean.TRUE.equals(schedule.getIsDayOff())
+                && scheduleRepository.existsByStellarAndStartDateTimeAndIsDayOffTrueAndIsDeletedFalse(
+                        stellar, schedule.getStartDateTime())) {
+            throw new InvalidArgumentException(DUPLICATE_DAY_OFF_MESSAGE);
+        }
+
         // save Schedule
         Schedule savedSchedule = scheduleRepository.save(schedule);
 
@@ -89,10 +102,19 @@ public class ScheduleService {
         // update schedule (validated in the entity)
         schedule.update(
                 requestDto.getIsFixedTime(),
+                requestDto.getIsDayOff(),
                 requestDto.getStartDateTime(),
                 requestDto.getStartDateTimeUntil(),
                 requestDto.getTitle(),
                 requestDto.getRemark());
+
+        // checked with the updated values (e.g. an omitted isDayOff keeps the current value);
+        // throwing rolls back the update and its history
+        if (Boolean.TRUE.equals(schedule.getIsDayOff())
+                && scheduleRepository.existsByStellarAndStartDateTimeAndIsDayOffTrueAndIsDeletedFalseAndIdNot(
+                        schedule.getStellar(), schedule.getStartDateTime(), id)) {
+            throw new InvalidArgumentException(DUPLICATE_DAY_OFF_MESSAGE);
+        }
 
         return id;
     }
